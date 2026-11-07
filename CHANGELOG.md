@@ -1,5 +1,7 @@
 # Changelog
 
+Versionen bis 1.1 stammen aus IPVIO Stream.
+
 ## 1.1
 **Updates and your data**
 - In-app updates from GitHub Releases: the app checks once a day and shows "Update available" in the bell; one click downloads and installs

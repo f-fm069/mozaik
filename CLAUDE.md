@@ -1,5 +1,17 @@
 # Viewo – Hinweise für Claude
 
+## Datenschutz (hat Vorrang vor allem anderen)
+
+- Mein Klarname und meine E-Mail-Adresse stehen nie im Projekt und werden nie hochgeladen:
+  nicht in Dateien, Copyright-Zeilen, README, Doku, Commit-Nachrichten, Autorenfeldern,
+  Zweignamen und nicht in lokalen Pfaden wie /Users/<Name>/.
+- Die eigene Copyright-Zeile heißt: Copyright (C) 2026 Viewo contributors
+- Vor jedem Commit und jedem Hochladen prüfst du den Änderungsumfang auf Name, E-Mail-Adresse
+  und lokale Benutzerpfade und sagst es mir, falls du etwas findest.
+- Dazu gehört auch, welcher Autor in Git eingestellt ist (git config user.name / user.email).
+  Ist dort nichts oder ein Klarname eingestellt, nicht committen, sondern mir Bescheid sagen.
+- Frag mich nie nach meinem Klarnamen oder meiner E-Mail-Adresse.
+
 ## 1. Projekt
 
 Viewo ist mein eigenständig weiterentwickelter Fork von Emrodev/IPVIO-Stream:

@@ -35,11 +35,12 @@ Lizenz: GPL-3.0.
 ## 4. Offene Aufgaben
 
 - [ ] Umbenennung von IPVIO zu Viewo
-- [ ] Package-Name ändern
-- [ ] Neues Logo
-- [ ] README überarbeiten und Fork-Hinweis ergänzen
-- [ ] Spendenlink in .github prüfen
-- [ ] Update-Funktion auf meinen Fork umstellen
+  - [x] Etappe 1: sichtbarer Name in der App (Texte, Übersetzungen, App-Name)
+  - [ ] Package-Name ändern
+  - [ ] Neues Logo
+  - [ ] Update-Funktion auf meinen Fork umstellen
+- [x] README überarbeiten und Fork-Hinweis ergänzen
+- [x] Spendenlink in .github prüfen (FUNDING.yml und Spendenbereich entfernt)
 - [ ] Kategorien ausblenden
 
 ## 5. Bauen und Testen

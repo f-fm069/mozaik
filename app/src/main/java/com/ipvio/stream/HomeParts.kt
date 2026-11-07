@@ -195,7 +195,7 @@ fun HeroButton(text: String, icon: AIcon, primary: Boolean, modifier: Modifier =
     var f by remember { mutableStateOf(false) }
     val pulse = rememberPulse()
     val s by animateFloatAsState(if (f) focusScale(1.06f) else 1f, label = "herobtn")
-    val shape = RoundedCornerShape(50)
+    val shape = RoundedCornerShape(DS.RadiusControl)
     val ink = if (f) DS.FocusInk else Color.White
     Row(
         modifier.graphicsLayer { val k = s * pulse.scale; scaleX = k; scaleY = k }.height(dpx(h)).clip(shape)
@@ -219,7 +219,7 @@ fun DetailPill(text: String, modifier: Modifier = Modifier, light: Boolean = fal
     var f by remember { mutableStateOf(false) }
     val pulse = rememberPulse()
     val s by animateFloatAsState(if (f) focusScale(1.06f) else 1f, label = "detpill")
-    val shape = RoundedCornerShape(50)
+    val shape = RoundedCornerShape(DS.RadiusControl)
     val ink = if (f) DS.FocusInk else Color.White
     Row(
         modifier.graphicsLayer { val k = s * pulse.scale; scaleX = k; scaleY = k }.height(dpx(h)).clip(shape)
@@ -256,7 +256,7 @@ fun RowTitle(
             modifier = Modifier.weight(1f), raw = raw)
         if (onAll != null) {
             var f by remember { mutableStateOf(false) }
-            val shape = RoundedCornerShape(50)
+            val shape = RoundedCornerShape(DS.RadiusControl)
             val scope = rememberCoroutineScope()
             val scrollTop = LocalScrollTop.current
             val bring = remember { BringIntoViewRequester() }

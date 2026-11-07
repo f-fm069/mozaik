@@ -38,7 +38,7 @@ import androidx.compose.ui.window.PopupProperties
 fun FilterPill(text: String, active: Boolean, modifier: Modifier = Modifier, icon: FIcon? = null, caret: Boolean = false, aicon: AIcon? = null, raw: Boolean = false, onClick: () -> Unit) {
     var f by remember { mutableStateOf(false) }
     val s by animateFloatAsState(if (f) focusScale(1.06f) else 1f, label = "fp")
-    val shape = RoundedCornerShape(50)
+    val shape = RoundedCornerShape(DS.RadiusControl)
     // Einheitlich mit den Knöpfen der Detailseite (Runde 15): leicht durchsichtig mit feinem Rand, Markierung hell gefüllt
     val c = ButtonColors(
         if (f) DS.FocusFill else if (active) Color(0x4DFFFFFF) else Color(0x33FFFFFF),

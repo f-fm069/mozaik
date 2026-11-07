@@ -117,7 +117,7 @@ fun PLiveChip(modifier: Modifier = Modifier, behindSec: Long = 0L) {
 fun PSkipPill(text: String, modifier: Modifier = Modifier, onClick: () -> Unit) {
     var f by remember { mutableStateOf(false) }
     val sc by animateFloatAsState(if (f) focusScale(1.05f) else 1f, animationSpec = tween(120), label = "skip")
-    val shape = RoundedCornerShape(50)
+    val shape = RoundedCornerShape(DS.RadiusControl)
     Row(
         modifier
             .graphicsLayer { scaleX = sc; scaleY = sc }

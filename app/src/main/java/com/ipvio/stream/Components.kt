@@ -59,7 +59,7 @@ fun PillButton(text: String, modifier: Modifier = Modifier, light: Boolean = fal
     var f by remember { mutableStateOf(false) }
     val pulse = rememberPulse()
     val s by animateFloatAsState(if (f) focusScale(1.07f) else 1f, label = "pill")
-    val shape = RoundedCornerShape(50)
+    val shape = RoundedCornerShape(DS.RadiusControl)
     val c = buttonColors(f, primary = light)
     Box(
         modifier.graphicsLayer { val k = s * pulse.scale; scaleX = k; scaleY = k }
@@ -79,7 +79,7 @@ fun SmallPill(text: String, modifier: Modifier = Modifier, icon: AIcon? = null, 
     var f by remember { mutableStateOf(false) }
     val pulse = rememberPulse()
     val s by animateFloatAsState(if (f) focusScale(1.07f) else 1f, label = "small")
-    val shape = RoundedCornerShape(50)
+    val shape = RoundedCornerShape(DS.RadiusControl)
     val c = buttonColors(f, primary = false)
     Box(
         modifier.graphicsLayer { val k = s * pulse.scale; scaleX = k; scaleY = k }

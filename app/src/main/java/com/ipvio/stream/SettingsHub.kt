@@ -210,7 +210,7 @@ internal fun SectionTitle(text: String) {
 private fun ChoiceChip(label: String, selected: Boolean, dots: List<Color> = emptyList(), modifier: Modifier = Modifier, onFocus: ((Boolean) -> Unit)? = null, onClick: () -> Unit) {
     var f by remember { mutableStateOf(false) }
     val sc by animateFloatAsState(if (f) focusScale(1.05f) else 1f, label = "chip")
-    val shape = RoundedCornerShape(50)
+    val shape = RoundedCornerShape(DS.RadiusControl)
     // Fokus wie alle Knöpfe: weiße Fläche, dunkle Schrift. Ausgewählt (ohne Fokus): hellere Fläche, heller Rand und Haken.
     Row(
         modifier.graphicsLayer { scaleX = sc; scaleY = sc }.height(46.dp).clip(shape)

@@ -91,7 +91,7 @@ fun HeaderBar(
 @Composable
 private fun SearchPill(w: Int, onClick: () -> Unit) {
     var f by remember { mutableStateOf(false) }
-    val shape = RoundedCornerShape(50)
+    val shape = RoundedCornerShape(DS.RadiusControl)
     Row(
         Modifier.width(dpx(w)).height(dpx(50)).clip(shape)
             .background(if (f) DS.FocusFill else Color(0xCC0E0E12))
@@ -113,7 +113,7 @@ private fun SearchPill(w: Int, onClick: () -> Unit) {
 private fun NavTab(t: HeaderTab, fixedReq: FocusRequester?) {
     var f by remember { mutableStateOf(false) }
     val s by animateFloatAsState(if (f) focusScale(1.05f) else 1f, label = "navtab")
-    val shape = RoundedCornerShape(50)
+    val shape = RoundedCornerShape(DS.RadiusControl)
     // Zurück aus „Alle …“, „Neu hinzugefügt“, „Top bewertet“ oder „Kategorien“: denselben Reiter wieder markieren
     // Nur EIN focusRequester pro Element (zwei auf einem Element: der Rückkehr-Fokus griff beim ersten Reiter nicht)
     val own = remember { FocusRequester() }
@@ -212,7 +212,7 @@ private fun ViewButton() {
 @Composable
 private fun ChoiceChip(label: String, selected: Boolean, modifier: Modifier, onClick: () -> Unit) {
     var f by remember { mutableStateOf(false) }
-    val shape = RoundedCornerShape(50)
+    val shape = RoundedCornerShape(DS.RadiusControl)
     Row(
         modifier.height(dpx(42)).clip(shape)
             .background(if (f) DS.FocusFill else if (selected) Accent1.copy(alpha = .22f) else Color(0x1AFFFFFF))

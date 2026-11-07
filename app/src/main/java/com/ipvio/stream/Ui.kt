@@ -105,6 +105,8 @@ object DS {
     val RadiusM = 16.dp
     val RadiusL = 20.dp
     val RadiusXl = 24.dp
+    /** Ecken von Eingabefeldern und Buttons mit Text (immer gleich). Runde Symbol-Buttons bleiben Kreise. */
+    val RadiusControl = RadiusM
 
     // Rahmen
     val Border = 2.dp
@@ -156,7 +158,7 @@ fun Modifier.focusGlow(focused: Boolean, shape: androidx.compose.ui.graphics.Sha
 fun FocusButton(text: String, modifier: Modifier = Modifier, primary: Boolean = false, onClick: () -> Unit) {
     var f by remember { mutableStateOf(false) }
     val s by animateFloatAsState(if (f) focusScale(1.07f) else 1f, label = "btn")
-    val shape = RoundedCornerShape(50)
+    val shape = RoundedCornerShape(DS.RadiusControl)
     Box(
         modifier
             .graphicsLayer { scaleX = s; scaleY = s }
@@ -179,7 +181,7 @@ fun Field(
     onDone: (() -> Unit)? = null
 ) {
     var f by remember { mutableStateOf(false) }
-    val shape = RoundedCornerShape(16.dp)
+    val shape = RoundedCornerShape(DS.RadiusControl)
     Box(
         modifier
             .fillMaxWidth().height(62.dp)

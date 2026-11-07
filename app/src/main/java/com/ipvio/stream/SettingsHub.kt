@@ -59,7 +59,7 @@ private val CATS = listOf(
     Cat(AIcon.Lock, "Jugendschutz", "PIN, Inhalte ab 18"),
     Cat(AIcon.Storage, "Speicher", "Cache, Verlauf, Fortsetzen"),
     Cat(AIcon.Pulse, "Diagnose", "Status und Fehlersuche"),
-    Cat(AIcon.Info, "Über IPVIO Stream", "Version, Quellen, Zurücksetzen")
+    Cat(AIcon.Info, "Über Viewo", "Version, Quellen, Zurücksetzen")
 )
 
 /** Direkt eine Seite der Einstellungen öffnen (z. B. Profil-Kreis oben bei nur einem Profil: Seite „Profile“). */
@@ -432,7 +432,7 @@ private fun GeneralPage(ctx: Context) {
     SectionTitle("Start")
     ToggleRow(
         "Beim Einschalten des Geräts öffnen",
-        "IPVIO Stream startet automatisch, sobald der Fernseher oder die Box hochgefahren ist.",
+        "Viewo startet automatisch, sobald der Fernseher oder die Box hochgefahren ist.",
         General.autoStart
     ) { on ->
         General.setAutoStart(ctx, on)
@@ -788,7 +788,7 @@ private fun DiagPage(ctx: Context, reload: () -> Unit) {
             val text = lines.joinToString("\n") { it.first + ": " + it.second }
             runCatching {
                 val cm = ctx.getSystemService(android.content.ClipboardManager::class.java)
-                cm?.setPrimaryClip(android.content.ClipData.newPlainText("IPVIO Diagnose", text))
+                cm?.setPrimaryClip(android.content.ClipData.newPlainText("Viewo Diagnose", text))
             }
         }
     }
@@ -1131,10 +1131,11 @@ private fun ApiKeysPage(ctx: Context) {
 
 @Composable
 private fun AboutPage(ctx: Context) {
-    Text("IPVIO Stream · Version " + appVersion(ctx), color = Color.White, fontSize = 18.sp)
-    Hint("IPVIO Stream ist ein Player und liefert selbst keine Inhalte. Nutze nur Quellen, für die du eine Berechtigung hast.")
+    Text("Viewo · Version " + appVersion(ctx), color = Color.White, fontSize = 18.sp)
+    Hint("Viewo ist ein Player und liefert selbst keine Inhalte. Nutze nur Quellen, für die du eine Berechtigung hast.")
     Hint("Dieses Produkt verwendet die TMDB-API, wird aber nicht von TMDB unterstützt oder zertifiziert. Wertungen: OMDb. Intro-Zeiten: TheIntroDB.")
-    Hint("IPVIO Stream ist freie Software unter der GNU General Public License v3 (GPL-3.0). Verwendete Bibliotheken: AndroidX/Jetpack Compose, Media3 (Apache 2.0), OkHttp, Coil (Apache 2.0), Jellyfin FFmpeg-Decoder (GPL-3.0), Schriften Outfit und Inter (SIL Open Font License).")
+    Hint("Viewo ist freie Software unter der GNU General Public License v3 (GPL-3.0). Verwendete Bibliotheken: AndroidX/Jetpack Compose, Media3 (Apache 2.0), OkHttp, Coil (Apache 2.0), Jellyfin FFmpeg-Decoder (GPL-3.0), Schriften Outfit und Inter (SIL Open Font License).")
+    Hint("Viewo basiert auf IPVIO Stream von Emrodev.")
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         PillButton("Systemeinstellungen der App") {
             runCatching {

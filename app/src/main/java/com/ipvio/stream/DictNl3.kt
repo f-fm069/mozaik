@@ -76,7 +76,7 @@ keine¦geen
 Installiert¦Geïnstalleerd
 Oder vom Handy senden (gleiches WLAN):¦Of verstuur vanaf je telefoon (zelfde wifi):
 Bitte mit dem Internet verbinden¦Maak verbinding met internet
-So schaltest du IPVIO Stream frei – ohne etwas am Fernseher zu tippen:¦Zo ontgrendel je IPVIO Stream – zonder iets op de tv te typen:
+So schaltest du Viewo frei – ohne etwas am Fernseher zu tippen:¦Zo ontgrendel je Viewo – zonder iets op de tv te typen:
 1.  Öffne auf deinem Handy diese Adresse:¦1.  Open op je telefoon dit adres:
 3.  Dieser Bildschirm schaltet sich danach automatisch frei.¦3.  Dit scherm wordt daarna automatisch ontgrendeld.
 Prüfe …¦Controleren …
@@ -141,7 +141,7 @@ Farbe 2 · Hervorhebung¦Kleur 2 · Accenten
 Farbe 2 · automatisch¦Kleur 2 · automatisch
 Farbe 2 ist auf diesem Hintergrund schwer lesbar.¦Kleur 2 is op deze achtergrond slecht leesbaar.
 Farbe 1 färbt Knöpfe, Balken und markierte Flächen – die Schrift darauf wird automatisch hell oder dunkel, damit sie lesbar bleibt. Farbe 2 färbt Hervorhebungen, Rahmen und farbige Schrift. „Automatisch“ berechnet Farbe 2 passend zu Farbe 1.¦Kleur 1 kleurt knoppen, balken en gemarkeerde vlakken – de tekst erop wordt automatisch licht of donker, zodat die leesbaar blijft. Kleur 2 kleurt accenten, randen en gekleurde tekst. „Automatisch” berekent kleur 2 passend bij kleur 1.
-IPVIO Navy¦IPVIO Navy
+Viewo Navy¦Viewo Navy
 Einfacher mit dem Handy¦Makkelijker met je telefoon
 Mit der Fernbedienung zu tippen ist mühsam. Schick die Zugangsdaten lieber vom Handy:¦Typen met de afstandsbediening is lastig. Stuur de inloggegevens liever vanaf je telefoon:
 Handy mit demselben WLAN verbinden wie dieses Gerät.¦Verbind je telefoon met hetzelfde wifi-netwerk als dit apparaat.

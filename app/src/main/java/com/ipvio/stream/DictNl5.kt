@@ -110,7 +110,8 @@ Schlüssel ungültig¦Sleutel ongeldig
 Keine Verbindung¦Geen verbinding
 Die Schlüssel bleiben nur auf diesem Gerät. Nach dem Eintragen die App einmal neu starten, damit alle Bereiche die Infos laden. Intro- und Abspann-Zeiten kommen von TheIntroDB und brauchen keinen Schlüssel.¦De sleutels blijven alleen op dit apparaat. Start de app na het invoeren eenmaal opnieuw, zodat alle onderdelen de info laden. Intro- en aftitelingtijden komen van TheIntroDB en hebben geen sleutel nodig.
 Dieses Produkt verwendet die TMDB-API, wird aber nicht von TMDB unterstützt oder zertifiziert. Wertungen: OMDb. Intro-Zeiten: TheIntroDB.¦Dit product gebruikt de TMDB-API, maar wordt niet door TMDB ondersteund of gecertificeerd. Scores: OMDb. Introtijden: TheIntroDB.
-IPVIO Stream ist freie Software unter der GNU General Public License v3 (GPL-3.0). Verwendete Bibliotheken: AndroidX/Jetpack Compose, Media3 (Apache 2.0), OkHttp, Coil (Apache 2.0), Jellyfin FFmpeg-Decoder (GPL-3.0), Schriften Outfit und Inter (SIL Open Font License).¦IPVIO Stream is vrije software onder de GNU General Public License v3 (GPL-3.0). Gebruikte bibliotheken: AndroidX/Jetpack Compose, Media3 (Apache 2.0), OkHttp, Coil (Apache 2.0), Jellyfin FFmpeg-decoder (GPL-3.0), lettertypen Outfit en Inter (SIL Open Font License).
+Viewo ist freie Software unter der GNU General Public License v3 (GPL-3.0). Verwendete Bibliotheken: AndroidX/Jetpack Compose, Media3 (Apache 2.0), OkHttp, Coil (Apache 2.0), Jellyfin FFmpeg-Decoder (GPL-3.0), Schriften Outfit und Inter (SIL Open Font License).¦Viewo is vrije software onder de GNU General Public License v3 (GPL-3.0). Gebruikte bibliotheken: AndroidX/Jetpack Compose, Media3 (Apache 2.0), OkHttp, Coil (Apache 2.0), Jellyfin FFmpeg-decoder (GPL-3.0), lettertypen Outfit en Inter (SIL Open Font License).
+Viewo basiert auf IPVIO Stream von Emrodev.¦Viewo is gebaseerd op IPVIO Stream van Emrodev.
 Automatische Genres brauchen einen TMDB-Schlüssel (Einstellungen > API-Schlüssel).¦Automatische genres hebben een TMDB-sleutel nodig (Instellingen > API-sleutels).
 Tipp: Unter Einstellungen > API-Schlüssel einen eigenen TMDB-Schlüssel eintragen, dann erscheinen hier Beschreibung, Cover und Bewertungen.¦Tip: voer onder Instellingen > API-sleutels een eigen TMDB-sleutel in, dan verschijnen hier beschrijving, cover en beoordelingen.
 Zugang wird geprüft …¦Toegang wordt gecontroleerd …
@@ -233,13 +234,9 @@ Auf dem Handy im Querformat¦Op de telefoon in landschapsstand
 Die App ist für den Fernseher gebaut und wirkt quer am besten. Aus: dreht mit dem Gerät. Im Player: Tippen zeigt die Steuerung, Doppeltippen links/rechts spult, in der Mitte Pause.¦De app is gebouwd voor de tv en werkt het best in landschapsstand. Uit: draait mee met het apparaat. In de speler: tikken toont de bediening, dubbeltikken links/rechts spoelt, in het midden pauze.
 Oder mit der Handy-Kamera scannen¦Of scan met de camera van je telefoon
 QR-Code scannen¦QR-code scannen
-Spende¦Donatie
-Hallo, ich bin der nigerianische Prinz und brauche dringend deine Hilfe! Spaß beiseite: Die App kostet dich nichts, mich aber ein paar Nächte Schlaf und sehr viel Kaffee. Wenn du mir ein paar Euro schicken möchtest, tanzt mein Kontostand vor Freude. Kein Zwang: Die App bleibt kostenlos, werbefrei und GPL-lizenziert.¦Hallo, ik ben de Nigeriaanse prins en ik heb dringend je hulp nodig! Maar zonder gekheid: de app kost jou niets, maar mij wel een paar slapeloze nachten en HEEL veel koffie. Wil je me een paar euro sturen, dan danst mijn bankrekening van vreugde. Geen verplichting: de app blijft gratis, reclamevrij en onder GPL-licentie.
 Mit der Handy-Kamera scannen¦Scannen met de camera van je telefoon
 Folgen werden geladen …¦Afleveringen worden geladen …
 Die Folgen konnten nicht geladen werden. Verbindung oder Zugang prüfen.¦De afleveringen konden niet worden geladen. Controleer de verbinding of toegang.
-Dieser QR-Code ist der PayPal-Link für meine Spende. Mit der Handy-Kamera scannen, dann öffnet sich PayPal.¦Deze QR-code is de PayPal-link voor mijn donatie. Scan hem met de camera van je telefoon, dan opent PayPal.
-Unterstütze IPVIO Stream¦Steun IPVIO Stream
 Raster & Ansicht¦Raster & weergave
 American Football¦American football
 Basketball¦Basketbal

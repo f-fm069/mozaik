@@ -59,8 +59,7 @@ private val CATS = listOf(
     Cat(AIcon.Lock, "Jugendschutz", "PIN, Inhalte ab 18"),
     Cat(AIcon.Storage, "Speicher", "Cache, Verlauf, Fortsetzen"),
     Cat(AIcon.Pulse, "Diagnose", "Status und Fehlersuche"),
-    Cat(AIcon.Info, "Über IPVIO Stream", "Version, Quellen, Zurücksetzen"),
-    Cat(AIcon.HeartFilled, "Spende", "Unterstütze IPVIO Stream")
+    Cat(AIcon.Info, "Über IPVIO Stream", "Version, Quellen, Zurücksetzen")
 )
 
 /** Direkt eine Seite der Einstellungen öffnen (z. B. Profil-Kreis oben bei nur einem Profil: Seite „Profile“). */
@@ -138,7 +137,6 @@ fun SettingsHub(onAdd: () -> Unit, reload: () -> Unit) {
                 12 -> ParentalPage(ctx) { page = -1 }
                 13 -> StoragePage(ctx)
                 14 -> DiagPage(ctx, reload)
-                16 -> DonateSection(ctx)
                 else -> AboutPage(ctx)
             }
             Spacer(Modifier.height(8.dp).bringIntoViewRequester(endReq))

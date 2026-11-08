@@ -1,20 +1,20 @@
-# Viewo
+# Viewon
 
-> **Viewo is a fork of [IPVIO Stream](https://github.com/Emrodev/IPVIO-Stream) by Emrodev** and is developed further independently. Like the original, it is licensed under the GPL-3.0. Viewo is not affiliated with the original project.
+> **Viewon is a fork of [IPVIO Stream](https://github.com/Emrodev/IPVIO-Stream) by Emrodev** and is developed further independently. Like the original, it is licensed under the GPL-3.0. Viewon is not affiliated with the original project.
 
 A free, open-source IPTV player for **Android TV, Google TV and Amazon Fire TV**, built with Kotlin and Jetpack Compose and designed for the remote control.
 
-![Viewo home screen](docs/screenshots/homescreen.jpg)
+![Viewon home screen](docs/screenshots/homescreen.jpg)
 
-> **Viewo does not provide any content.** It contains no channels, playlists, films or series. It is only a player for playlists that **you** add yourself (Xtream Codes login or M3U address). Only use sources that you are legally allowed to use.
+> **Viewon does not provide any content.** It contains no channels, playlists, films or series. It is only a player for playlists that **you** add yourself (Xtream Codes login or M3U address). Only use sources that you are legally allowed to use.
 
 ## Install
 
-**Download:** [Viewo.apk (latest release)](https://github.com/f-fm069/viewo/releases/latest/download/Viewo.apk)
+**Download:** [Viewon.apk (latest release)](https://github.com/f-fm069/viewon/releases/latest/download/Viewon.apk)
 
 **Fire TV / Android TV with the Downloader app:** enter
 ```
-https://github.com/f-fm069/viewo/releases/latest/download/Viewo.apk
+https://github.com/f-fm069/viewon/releases/latest/download/Viewon.apk
 ```
 Allow "Install unknown apps" for Downloader (or your file manager) when asked, then install. No account or registration needed.
 
@@ -93,7 +93,7 @@ The app ships **without any API keys**. You can enter your own free keys in the 
 1. Create an account at https://www.themoviedb.org/signup and confirm the e-mail address.
 2. **Log in.** The API page shows "restricted" as long as you are not logged in.
 3. Open https://www.themoviedb.org/settings/api (or: profile picture > Settings > API) and click **Request an API key**.
-4. Choose **Developer**, accept the terms and fill in the form (application name e.g. "Viewo", type "Personal use", a short description; the URL can be your GitHub page).
+4. Choose **Developer**, accept the terms and fill in the form (application name e.g. "Viewon", type "Personal use", a short description; the URL can be your GitHub page).
 5. Copy the **API Key** (the 32-character one, not the "API Read Access Token").
 
 ### Get a free OMDb key
@@ -110,8 +110,8 @@ Settings > **API keys**: paste the key into the field, press **Save and check** 
 Requirements: Android Studio (current version) with the Android SDK; the Gradle wrapper downloads everything else.
 
 ```
-git clone https://github.com/f-fm069/viewo.git
-cd viewo
+git clone https://github.com/f-fm069/viewon.git
+cd viewon
 ./gradlew assembleDebug        # Windows: gradlew.bat assembleDebug
 ```
 
@@ -126,10 +126,10 @@ Unit tests for the pure logic: `./gradlew test`
 ## Project layout
 
 ```
-app/src/main/java/com/ipvio/stream/   all Kotlin sources (one package)
+app/src/main/java/io/github/f_fm069/viewon/   all Kotlin sources (one package)
   *Logic.kt                           pure, Android-free logic (covered by unit tests)
   Dict*.kt                            translations (one row per text: de¦en¦tr¦bs¦hr¦sr¦es¦fr¦it)
-app/src/test/java/com/ipvio/stream/   JUnit tests
+app/src/test/java/io/github/f_fm069/viewon/   JUnit tests
 app/src/main/res/font/                Outfit and Inter (SIL Open Font License)
 licenses/                             font licences
 ```
@@ -137,7 +137,7 @@ licenses/                             font licences
 ## License
 
 Copyright (C) 2026 IPVIO Stream contributors<br>
-Copyright (C) 2026 Viewo contributors
+Copyright (C) 2026 Viewon contributors
 
 IPVIO Stream is free software: you can redistribute it and/or modify it under the terms of the **GNU General Public License version 3** (see [LICENSE](LICENSE)). The GPL is required because the app includes the GPL-3.0 licensed FFmpeg audio decoder. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for the libraries, fonts and services used.
 

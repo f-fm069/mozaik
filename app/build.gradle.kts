@@ -26,13 +26,13 @@ val keystore = Properties().apply {
 val hasKeystore = listOf("storeFile", "storePassword", "keyAlias", "keyPassword").all { !keystore.getProperty(it).isNullOrBlank() }
 
 android {
-    namespace = "com.ipvio.stream"
+    namespace = "io.github.f_fm069.viewon"
     compileSdk {
         version = release(37)
     }
 
     defaultConfig {
-        applicationId = "com.ipvio.stream"
+        applicationId = "io.github.f_fm069.viewon"
         minSdk = 24
         targetSdk = 37
         // Raise both for every release; the GitHub release tag must match versionName (e.g. tag "v1.1").

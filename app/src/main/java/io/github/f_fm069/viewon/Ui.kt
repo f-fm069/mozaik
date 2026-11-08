@@ -58,7 +58,7 @@ val Muted = Color(0xFFA0A6B8)
 
 /**
  * Farb-Tokens (Runde 17). Neutrale Text-Stufen gelten in jedem Design; Flächen leiten sich aus dem gewählten Design (Look) ab.
- * Kontrast auf IPVIO Navy #0B0F19 (WCAG): TextHi 17:1, TextMid 12:1, TextLow/Muted 7,9:1; auf der hellsten Fläche immer ≥ 5,9:1.
+ * Kontrast auf Navy #0B0F19 (WCAG): TextHi 17:1, TextMid 12:1, TextLow/Muted 7,9:1; auf der hellsten Fläche immer ≥ 5,9:1. Auf OLED-Schwarz (Standard) sind die Werte noch etwas höher.
  * Fokus: Knöpfe weiß mit dunkler Schrift, Karten weißer Rahmen mit Schatten.
  */
 object Tok {

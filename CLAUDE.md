@@ -37,7 +37,7 @@ Lizenz: GPL-3.0.
 - [x] Umbenennung von IPVIO zu Viewon
   - [x] Etappe 1: sichtbarer Name in der App (Texte, Übersetzungen, App-Name)
   - [x] Package-Name ändern
-  - [ ] Neues Logo
+  - [x] Neues Logo
   - [x] Update-Funktion auf meinen Fork umstellen
 - [x] README überarbeiten und Fork-Hinweis ergänzen
 - [x] Spendenlink in .github prüfen (FUNDING.yml und Spendenbereich entfernt)

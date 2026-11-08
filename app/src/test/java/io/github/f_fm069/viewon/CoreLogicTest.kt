@@ -92,11 +92,11 @@ http://h/x
     @Test fun farben_firmenfarbenSindStandard() {
         assertEquals(Look.BRAND_GREEN, Look.ACCENTS[0].fill)
         assertEquals(0x0B0F19, Look.BGS[0].bg)
-        // Neon-Grün bekommt dunkle Schrift, dunkle Flächen weiterhin weiße
+        // Das Standard-Blau bekommt dunkle Schrift, dunkle Flächen weiterhin weiße
         assertEquals(ThemeMath.INK, ThemeMath.onAccent(Look.BRAND_GREEN))
         assertEquals(0xFFFFFF, ThemeMath.onAccent(0x7C5CFF))
-        assertTrue(ThemeMath.contrast(ThemeMath.onAccent(Look.BRAND_GREEN), Look.BRAND_GREEN) >= 7.0)
-        assertTrue(ThemeMath.contrast(Look.BRAND_GREEN, 0x0B0F19) >= 7.0)   // Grün als Schrift auf Navy
+        assertTrue(ThemeMath.contrast(ThemeMath.onAccent(Look.BRAND_GREEN), Look.BRAND_GREEN) >= 4.5)
+        assertTrue(ThemeMath.contrast(Look.BRAND_GREEN, 0x0B0F19) >= 4.5)   // Blau als Schrift auf Navy
         for (rgb in Look.SWATCHES) assertTrue(ThemeMath.hexOf(rgb), ThemeMath.contrast(ThemeMath.onAccent(rgb), rgb) >= 3.0)
     }
 

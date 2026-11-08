@@ -169,7 +169,7 @@ fun ScoreRow(m: Meta, sp: Int) {
         if (m.imdbRating == null && m.rtRating == null) m.rating?.let { r ->
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(dpx(sp * 0.3f))) {
                 AppIcon(AIcon.Star, Accent1, size = dpx(sp * 1.1f))
-                Text(raw = true, text = String.format("%.1f", r), color = Accent1, fontSize = spx(sp), fontWeight = FontWeight.SemiBold)
+                Text(raw = true, text = String.format("%.1f", r), color = Accent2, fontSize = spx(sp), fontWeight = FontWeight.SemiBold)
             }
         }
     }
@@ -461,7 +461,7 @@ fun ChannelNowCard(item: Item, modifier: Modifier, onClick: () -> Unit) {
         Spacer(Modifier.height(dpx(6)))
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(dpx(6))) {
             Box(Modifier.size(dpx(7)).clip(CircleShape).background(Accent1))
-            Text("Live", color = Accent1, fontSize = spx(12), fontWeight = FontWeight.SemiBold)
+            Text("Live", color = Accent2, fontSize = spx(12), fontWeight = FontWeight.SemiBold)
             if (nowE != null) Text(raw = true, text = "· " + hhmm(nowE.start) + " – " + hhmm(nowE.end), color = Color(0xFF8E8E96), fontSize = spx(12), maxLines = 1)
         }
         Spacer(Modifier.weight(1f))

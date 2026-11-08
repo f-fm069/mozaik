@@ -19,11 +19,11 @@ class BgPreset(val name: String, val bg: Int, val surf: Int, val surf2: Int)
  * dadurch ändert sich beim Umschalten die ganze App sofort, ohne dass irgendein Bildschirm angepasst werden muss.
  */
 object Look {
-    /** Standard-Design: helles Grün #4ADE80 (Hervorhebung #86EFAC) auf Navy #0B0F19. */
-    const val BRAND_GREEN = 0x4ADE80
-    const val BRAND_GREEN_HI = 0x86EFAC
+    /** Standard-Design: Blau #3D8BFF (Hervorhebung #7DB8FF) passend zum Logo, auf Navy #0B0F19. */
+    const val BRAND_GREEN = 0x3D8BFF
+    const val BRAND_GREEN_HI = 0x7DB8FF
     const val BRAND_NAVY = 0x0B0F19
-    /** Standard: IPVIO-Grün auf Navy (Runde 13e: die Entwurfs-Farben wurden wieder entfernt). */
+    /** Standard: Viewon-Blau auf Navy (Runde 13e: die Entwurfs-Farben wurden wieder entfernt). */
     const val DEFAULT_ACCENT = 0
     const val DEFAULT_BG = 0
 

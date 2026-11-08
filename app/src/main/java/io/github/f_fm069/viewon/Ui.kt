@@ -51,7 +51,7 @@ val Surf: Color get() = Look.surf
 val Surf2: Color get() = Look.surf2
 val Accent1: Color get() = Look.accent1
 val Accent2: Color get() = Look.accent2
-/** Schriftfarbe auf Accent1-Flächen (bei sehr hellen Farben wie IPVIO-Grün dunkel). */
+/** Schriftfarbe auf Accent1-Flächen (bei hellen Farben wie der Standardfarbe dunkel). */
 val OnAccent: Color get() = Look.onAccent
 /** Metadaten-Grau (Runde 17 heller: Kontrast ≥ 6:1 auf allen Flächen, auch auf Glas über Bildern lesbar). */
 val Muted = Color(0xFFA0A6B8)

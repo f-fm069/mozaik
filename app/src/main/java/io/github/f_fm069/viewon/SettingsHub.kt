@@ -38,12 +38,15 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.type
 
-private class Cat(val icon: AIcon, val title: String, val sub: String)
+/** Kachel der Einstellungs-Startseite. Die Position in [CATS] ist die feste Seitennummer (siehe `when (page)` und SettingsNav). */
+internal class Cat(val icon: AIcon, val title: String, val sub: String)
 
-private val CATS = listOf(
+/** Reihenfolge nicht ändern: Position = Seitennummer. Die Anzeige-Reihenfolge und die Gruppen stehen in [SettingsHubLogic]. */
+internal val CATS = listOf(
     Cat(AIcon.Gear, "Allgemein", "Start, Beenden, Autostart"),
     Cat(AIcon.Globe, "Sprache & Region", "Sprache, Uhrzeit, Zeitzone"),
     Cat(AIcon.Grid, "Ansicht", "Kartengröße, Seitenleiste, Raster"),
@@ -88,18 +91,30 @@ fun SettingsHub(onAdd: () -> Unit, reload: () -> Unit) {
     // Kein eigenes verticalScroll: Der Einstellungs-Tab liegt in einer LazyColumn, die selbst scrollt.
     Column(Modifier.padding(horizontal = DS.PageX, vertical = dpx(20)), verticalArrangement = Arrangement.spacedBy(dpx(18))) {
         if (page < 0) {
-            // Runde 15: im Stil der Startseite (Kacheln mit eigener Farbe je Bereich, ruhige Schrift, weißer Fokus)
+            // Ruhige Kacheln auf der Fläche des Hintergrunds, Farbe nur im Symbol je Gruppe, weißer Fokus-Rahmen
             Column(verticalArrangement = Arrangement.spacedBy(dpx(4))) {
                 Text("Einstellungen", color = Color.White, fontSize = spx(38), fontWeight = FontWeight.ExtraBold)
                 Text("Alles rund um Aussehen, Wiedergabe und Konto", color = Tok.TextLow, fontSize = spx(16))
             }
-            CATS.chunked(3).forEachIndexed { r, row ->
-                Row(horizontalArrangement = Arrangement.spacedBy(dpx(16))) {
-                    row.forEachIndexed { c, cat ->
-                        val idx = r * 3 + c
-                        SettingsCard(cat, idx, Modifier.weight(1f).focusRequester(cardFocus[idx])) { last = idx; page = idx }
+            // Gruppen mit Überschrift; jede Kachel öffnet über ihre feste Seitennummer p (nicht über die Anzeige-Position)
+            SettingsHubLogic.GROUPS.forEach { g ->
+                val gc = Color(0xFF000000.toInt() or g.color)
+                Column(verticalArrangement = Arrangement.spacedBy(dpx(14))) {
+                    Text(
+                        Lang.tr(g.title).uppercase(Lang.locale()), raw = true, color = gc, fontSize = spx(14),
+                        fontWeight = FontWeight.Bold, letterSpacing = 1.8.sp, modifier = Modifier.padding(top = dpx(8))
+                    )
+                    g.pages.chunked(SettingsHubLogic.COLUMNS).forEach { row ->
+                        Row(horizontalArrangement = Arrangement.spacedBy(dpx(16))) {
+                            row.forEach { p ->
+                                SettingsCard(
+                                    CATS[p], gc,
+                                    Modifier.weight(1f).focusRequester(cardFocus[p]).onPreviewKeyEvent { e -> settingsArrow(e, p, cardFocus) }
+                                ) { last = p; page = p }
+                            }
+                            repeat(SettingsHubLogic.COLUMNS - row.size) { Spacer(Modifier.weight(1f)) }
+                        }
                     }
-                    repeat(3 - row.size) { Spacer(Modifier.weight(1f)) }
                 }
             }
         } else {
@@ -145,22 +160,30 @@ fun SettingsHub(onAdd: () -> Unit, reload: () -> Unit) {
     }
 }
 
-/** Farbe je Bereich: gleicher Aufbau wie die Kacheln der Startseite (Farbverlauf, Symbol in der Bereichsfarbe, Pfeil). */
-private fun catColors(i: Int): Triple<Color, Color, Color> {
-    val h = (i * 360f / CATS.size + 18f) % 360f
-    return Triple(Color.hsv(h, 0.62f, 0.34f), Color.hsv(h, 0.70f, 0.14f), Color.hsv(h, 0.45f, 1f))
+/** Pfeiltasten auf den Kacheln: springt von Kachel zu Kachel über die Gruppen hinweg (Regeln in SettingsHubLogic.move). */
+private fun settingsArrow(e: KeyEvent, page: Int, focus: List<FocusRequester>): Boolean {
+    val dir = when (e.key) {
+        Key.DirectionRight -> SettingsHubLogic.Dir.RIGHT
+        Key.DirectionLeft -> SettingsHubLogic.Dir.LEFT
+        Key.DirectionDown -> SettingsHubLogic.Dir.DOWN
+        Key.DirectionUp -> SettingsHubLogic.Dir.UP
+        else -> return false
+    }
+    val target = SettingsHubLogic.move(page, dir) ?: return false
+    if (e.type == KeyEventType.KeyDown && target != page) runCatching { focus[target].requestFocus() }
+    return true
 }
 
+/** Kachel: Fläche des Hintergrund-Schemas, dezenter Rahmen; nur das runde Symbolfeld trägt die Gruppenfarbe. */
 @Composable
-private fun SettingsCard(cat: Cat, idx: Int, modifier: Modifier, onClick: () -> Unit) {
+private fun SettingsCard(cat: Cat, ink: Color, modifier: Modifier, onClick: () -> Unit) {
     var f by remember { mutableStateOf(false) }
     val s by animateFloatAsState(if (f) focusScale(1.04f) else 1f, label = "sc")
     val shape = RoundedCornerShape(dpx(14))
-    val (c1, c2, ink) = catColors(idx)
     Row(
         modifier.height(dpx(96)).graphicsLayer { scaleX = s; scaleY = s }.clip(shape)
-            .background(Brush.horizontalGradient(listOf(c1, c2)))
-            .border(if (f) 3.dp else 1.dp, if (f) Color.White else ink.copy(alpha = .22f), shape)
+            .background(Surf)
+            .border(if (f) 3.dp else 1.dp, if (f) Color.White else Color(0x1FFFFFFF), shape)
             .onFocusChanged { f = it.isFocused }
             .trackFocus()
             .clickable(onClick = onClick)

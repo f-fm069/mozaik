@@ -265,4 +265,6 @@ Zweiter Stream nicht abspielbar¦Tweede stream kan niet worden afgespeeld
 Alle Playlists¦Alle playlists
 Fenstergröße¦Venstergrootte
 Gilt für Bild-in-Bild. Deine Auswahl wird gespeichert.¦Geldt voor beeld-in-beeld. Je keuze wordt onthouden.
+Wiedergabe¦Afspelen
+Konto & System¦Account en systeem
 """

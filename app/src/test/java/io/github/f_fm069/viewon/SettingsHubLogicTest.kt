@@ -32,6 +32,8 @@ class SettingsHubLogicTest {
         assertEquals(listOf("Genres & Kategorien", "Playlists", "API-Schlüssel"), titles(g[2].pages))
         assertEquals(listOf("Profile", "Jugendschutz", "Speicher", "Diagnose", "Über Viewon"), titles(g[3].pages))
         assertEquals(listOf(0xE0B05A, 0x3D8BFF, 0xA98BFF, 0xFF8FB1), g.map { it.color })
+        // Nur das Symbol von „Wiedergabe“ ist heller, Kreis und Überschrift behalten #3D8BFF
+        assertEquals(listOf(0xE0B05A, 0x7DB8FF, 0xA98BFF, 0xFF8FB1), g.map { it.iconColor })
     }
 
     @Test fun rechtsLaeuftDurchAlleKacheln() {
@@ -72,6 +74,14 @@ class SettingsHubLogicTest {
         // Gruppenfarbe als Schrift auf jedem Hintergrund mindestens 4,5:1
         for (g in SettingsHubLogic.GROUPS) for (b in Look.BGS) {
             assertTrue("${g.title} auf ${b.name}", ThemeMath.contrast(g.color, b.bg) >= 4.5)
+        }
+    }
+
+    @Test fun symboleAufIhremKreisGutLesbar() {
+        // Symbol auf dem Kreis (Gruppenfarbe 16 % über der Kachelfläche) mindestens 4,5:1, auf jedem Hintergrund
+        for (g in SettingsHubLogic.GROUPS) for (b in Look.BGS) {
+            val circle = SettingsHubLogic.circleRgb(g.color, b.surf)
+            assertTrue("${g.title} auf ${b.name}", ThemeMath.contrast(g.iconColor, circle) >= 4.5)
         }
     }
 }

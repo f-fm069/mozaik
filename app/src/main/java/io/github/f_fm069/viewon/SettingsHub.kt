@@ -99,6 +99,7 @@ fun SettingsHub(onAdd: () -> Unit, reload: () -> Unit) {
             // Gruppen mit Überschrift; jede Kachel öffnet über ihre feste Seitennummer p (nicht über die Anzeige-Position)
             SettingsHubLogic.GROUPS.forEach { g ->
                 val gc = Color(0xFF000000.toInt() or g.color)
+                val ic = Color(0xFF000000.toInt() or g.iconColor)
                 Column(verticalArrangement = Arrangement.spacedBy(dpx(14))) {
                     Text(
                         Lang.tr(g.title).uppercase(Lang.locale()), raw = true, color = gc, fontSize = spx(14),
@@ -108,7 +109,7 @@ fun SettingsHub(onAdd: () -> Unit, reload: () -> Unit) {
                         Row(horizontalArrangement = Arrangement.spacedBy(dpx(16))) {
                             row.forEach { p ->
                                 SettingsCard(
-                                    CATS[p], gc,
+                                    CATS[p], gc, ic,
                                     Modifier.weight(1f).focusRequester(cardFocus[p]).onPreviewKeyEvent { e -> settingsArrow(e, p, cardFocus) }
                                 ) { last = p; page = p }
                             }
@@ -176,7 +177,7 @@ private fun settingsArrow(e: KeyEvent, page: Int, focus: List<FocusRequester>): 
 
 /** Kachel: Fläche des Hintergrund-Schemas, dezenter Rahmen; nur das runde Symbolfeld trägt die Gruppenfarbe. */
 @Composable
-private fun SettingsCard(cat: Cat, ink: Color, modifier: Modifier, onClick: () -> Unit) {
+private fun SettingsCard(cat: Cat, ring: Color, ink: Color, modifier: Modifier, onClick: () -> Unit) {
     var f by remember { mutableStateOf(false) }
     val s by animateFloatAsState(if (f) focusScale(1.04f) else 1f, label = "sc")
     val shape = RoundedCornerShape(dpx(14))
@@ -191,7 +192,7 @@ private fun SettingsCard(cat: Cat, ink: Color, modifier: Modifier, onClick: () -
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(dpx(16))
     ) {
-        Box(Modifier.size(dpx(48)).clip(CircleShape).background(ink.copy(alpha = .16f)), contentAlignment = Alignment.Center) {
+        Box(Modifier.size(dpx(48)).clip(CircleShape).background(ring.copy(alpha = SettingsHubLogic.CIRCLE_ALPHA)), contentAlignment = Alignment.Center) {
             AppIcon(cat.icon, ink, size = dpx(28))
         }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(dpx(3))) {

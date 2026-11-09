@@ -8,17 +8,34 @@ package io.github.f_fm069.viewon
  * weiter über diese Nummer.
  */
 object SettingsHubLogic {
-    /** Eine Gruppe: Überschrift (deutscher Schlüssel, wird übersetzt), Farbe 0xRRGGBB und Seitennummern in Anzeige-Reihenfolge. */
-    class Group(val title: String, val color: Int, val pages: List<Int>)
+    /**
+     * Eine Gruppe: Überschrift (deutscher Schlüssel, wird übersetzt), Farbe 0xRRGGBB (Überschrift und Kreis),
+     * Seitennummern in Anzeige-Reihenfolge und die Farbe des Symbols (meist gleich der Gruppenfarbe).
+     */
+    class Group(val title: String, val color: Int, val pages: List<Int>, val iconColor: Int = color)
 
     const val COLUMNS = 3
 
+    /** Deckkraft des runden Symbolfelds in der Gruppenfarbe. */
+    const val CIRCLE_ALPHA = 0.16f
+
     val GROUPS = listOf(
         Group("Darstellung", 0xE0B05A, listOf(0, 1, 2, 3, 4)),        // Allgemein, Sprache & Region, Ansicht, Design, Menü
-        Group("Wiedergabe", 0x3D8BFF, listOf(5, 6, 8)),               // Player, Ton & Untertitel, Live-TV & Guide
+        // Symbol im helleren Blau: #3D8BFF erreicht auf dem eigenen Kreis nicht überall 4,5:1
+        Group("Wiedergabe", 0x3D8BFF, listOf(5, 6, 8), iconColor = 0x7DB8FF), // Player, Ton & Untertitel, Live-TV & Guide
         Group("Inhalte", 0xA98BFF, listOf(7, 9, 11)),                 // Genres & Kategorien, Playlists, API-Schlüssel
         Group("Konto & System", 0xFF8FB1, listOf(10, 12, 13, 14, 15)) // Profile, Jugendschutz, Speicher, Diagnose, Über Viewon
     )
+
+    /** Farbe des Kreises: Gruppenfarbe mit [CIRCLE_ALPHA] über der Kachelfläche [surf] (für die Kontrastprüfung). */
+    fun circleRgb(color: Int, surf: Int): Int {
+        fun ch(shift: Int): Int {
+            val a = (surf shr shift) and 0xFF
+            val b = (color shr shift) and 0xFF
+            return Math.round(a * (1 - CIRCLE_ALPHA) + b * CIRCLE_ALPHA) shl shift
+        }
+        return ch(16) or ch(8) or ch(0)
+    }
 
     /** Alle Kachel-Reihen von oben nach unten (je Gruppe in Reihen zu je [COLUMNS]). */
     val ROWS: List<List<Int>> = GROUPS.flatMap { it.pages.chunked(COLUMNS) }

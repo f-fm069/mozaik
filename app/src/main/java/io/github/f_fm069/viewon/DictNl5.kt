@@ -267,4 +267,12 @@ Fenstergröße¦Venstergrootte
 Gilt für Bild-in-Bild. Deine Auswahl wird gespeichert.¦Geldt voor beeld-in-beeld. Je keuze wordt onthouden.
 Wiedergabe¦Afspelen
 Konto & System¦Account en systeem
+{0} (evtl. nicht abspielbar)¦{0} (mogelijk niet af te spelen)
+Nächste Sendung¦Volgende uitzending
+Staffel {#0}, Folge {#1}¦Seizoen {#0}, aflevering {#1}
+Fehler¦Fout
+Kein Absturz gespeichert.¦Geen crash opgeslagen.
+Text markieren und kopieren, z. B. für einen Fehlerbericht auf GitHub.¦Markeer en kopieer de tekst, bijv. voor een foutmelding op GitHub.
+Die Datei konnte nicht verwendet werden.¦Het bestand kon niet worden gebruikt.
+Eingespielt. Die App startet auf dem Fernseher neu.¦Hersteld. De app start opnieuw op de tv.
 """

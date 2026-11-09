@@ -322,7 +322,7 @@ private fun HomeTab(ctx: Context) {
         StepRow("Kartengröße (Reihen)", AppSettings.cardW.toString(),
             { AppSettings.setCardW(ctx, AppSettings.cardW - 10) },
             { AppSettings.setCardW(ctx, AppSettings.cardW + 10) })
-        Hint("Beim Markieren einer Auswahl zeigt die Vorschau sofort die Wirkung, OK übernimmt sie.")
+        Hint("Beim Markieren einer Auswahl zeigt die Vorschau sofort die Wirkung, OK übernimmt sie. Schriftgröße und Farben findest du unter „Design“.")
     }
 }
 
@@ -373,6 +373,6 @@ private fun CategoriesTab(ctx: Context) {
         val cv = listOf("Liste mit Vorschau", "Kacheln")
         Text("Ansicht", color = Muted, fontSize = 15.sp)
         Chips(cv, if (CatPrefs.listView) 0 else 1, hView) { CatPrefs.set(ctx, it == 0) }
-        Hint("Beim Markieren einer Auswahl zeigt die Vorschau sofort die Wirkung, OK übernimmt sie.")
+        Hint("Beim Markieren einer Auswahl zeigt die Vorschau sofort die Wirkung, OK übernimmt sie. Schriftgröße und Farben findest du unter „Design“.")
     }
 }

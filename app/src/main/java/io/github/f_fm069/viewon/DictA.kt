@@ -17,7 +17,7 @@ Alle anzeigen¦Show all¦Tümünü göster¦Prikaži sve¦Prikaži sve¦Prikaži
 Neu hinzugefügt¦Recently added¦Yeni eklenenler¦Nedavno dodano¦Nedavno dodano¦Nedavno dodano¦Añadido recientemente¦Ajouts récents¦Aggiunti di recente
 Beliebtheit¦Popularity¦Popülerlik¦Popularnost¦Popularnost¦Popularnost¦Popularidad¦Popularité¦Popolarità
 Playlist¦Playlist¦Playlist¦Playlista¦Playlista¦Plejlista¦Lista¦Playlist¦Playlist
-vor 1990¦before 1990¦1990 öncesi¦prije 1990.¦prije 1990.¦prije 1990.¦antes de 1990¦avant 1990¦prima del 1990
+vor 1990¦before 1990¦1990 öncesi¦prije 1990.¦prije 1990.¦pre 1990.¦antes de 1990¦avant 1990¦prima del 1990
 {#0} Titel¦{#0} titles¦{#0} yapım¦{#0} naslova¦{#0} naslova¦{#0} naslova¦{#0} títulos¦{#0} titres¦{#0} titoli
 {0} werden geladen … {#1} / {#2}¦Loading {0} … {#1} / {#2}¦{0} yükleniyor … {#1} / {#2}¦Učitavanje: {0} … {#1} / {#2}¦Učitavanje: {0} … {#1} / {#2}¦Učitavanje: {0} … {#1} / {#2}¦Cargando {0} … {#1} / {#2}¦Chargement : {0} … {#1} / {#2}¦Caricamento: {0} … {#1} / {#2}
 {0} laden … {#1}/{#2}¦Loading {0} … {#1}/{#2}¦{0} yükleniyor … {#1}/{#2}¦Učitavanje: {0} … {#1}/{#2}¦Učitavanje: {0} … {#1}/{#2}¦Učitavanje: {0} … {#1}/{#2}¦Cargando {0} … {#1}/{#2}¦Chargement : {0} … {#1}/{#2}¦Caricamento: {0} … {#1}/{#2}

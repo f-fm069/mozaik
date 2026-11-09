@@ -169,4 +169,13 @@ Die Folgen konnten nicht geladen werden. Verbindung oder Zugang prüfen.¦The ep
 # Einstellungs-Startseite: Gruppen
 Wiedergabe¦Playback¦Oynatma¦Reprodukcija¦Reprodukcija¦Reprodukcija¦Reproducción¦Lecture¦Riproduzione
 Konto & System¦Account & system¦Hesap ve sistem¦Račun i sistem¦Račun i sustav¦Nalog i sistem¦Cuenta y sistema¦Compte et système¦Account e sistema
+# Lücken aus der Übersetzungsprüfung (Player, Fehler, Handy-Seite)
+{0} (evtl. nicht abspielbar)¦{0} (may not play)¦{0} (oynatılamayabilir)¦{0} (možda se ne može pustiti)¦{0} (možda se ne može reproducirati)¦{0} (možda ne može da se pusti)¦{0} (puede que no se reproduzca)¦{0} (lecture peut-être impossible)¦{0} (potrebbe non essere riproducibile)
+Nächste Sendung¦Next program¦Sonraki program¦Sljedeća emisija¦Sljedeća emisija¦Sledeća emisija¦Siguiente programa¦Programme suivant¦Programma successivo
+Staffel {#0}, Folge {#1}¦Season {#0}, episode {#1}¦Sezon {#0}, bölüm {#1}¦Sezona {#0}, epizoda {#1}¦Sezona {#0}, epizoda {#1}¦Sezona {#0}, epizoda {#1}¦Temporada {#0}, episodio {#1}¦Saison {#0}, épisode {#1}¦Stagione {#0}, episodio {#1}
+Fehler¦Error¦Hata¦Greška¦Greška¦Greška¦Error¦Erreur¦Errore
+Kein Absturz gespeichert.¦No crash saved.¦Kaydedilmiş çökme yok.¦Nema sačuvanog pada.¦Nema spremljenog pada.¦Nema sačuvanog pada.¦No hay ningún cierre guardado.¦Aucun plantage enregistré.¦Nessun arresto anomalo salvato.
+Text markieren und kopieren, z. B. für einen Fehlerbericht auf GitHub.¦Select and copy the text, e.g. for a bug report on GitHub.¦Metni seçip kopyalayın, örneğin GitHub'da bir hata raporu için.¦Označi i kopiraj tekst, npr. za prijavu greške na GitHubu.¦Označi i kopiraj tekst, npr. za prijavu greške na GitHubu.¦Označi i kopiraj tekst, npr. za prijavu greške na GitHub-u.¦Selecciona y copia el texto, p. ej. para un informe de error en GitHub.¦Sélectionne et copie le texte, par ex. pour un rapport de bug sur GitHub.¦Seleziona e copia il testo, ad es. per una segnalazione di errore su GitHub.
+Die Datei konnte nicht verwendet werden.¦The file could not be used.¦Dosya kullanılamadı.¦Datoteka se nije mogla upotrijebiti.¦Datoteka se nije mogla upotrijebiti.¦Datoteka nije mogla da se upotrebi.¦No se pudo usar el archivo.¦Le fichier n'a pas pu être utilisé.¦Impossibile usare il file.
+Eingespielt. Die App startet auf dem Fernseher neu.¦Restored. The app restarts on the TV.¦Geri yüklendi. Uygulama TV'de yeniden başlıyor.¦Vraćeno. Aplikacija se ponovo pokreće na TV-u.¦Vraćeno. Aplikacija se ponovno pokreće na TV-u.¦Vraćeno. Aplikacija se ponovo pokreće na TV-u.¦Restaurado. La app se reinicia en el televisor.¦Restauré. L'application redémarre sur la TV.¦Ripristinato. L'app si riavvia sulla TV.
 """

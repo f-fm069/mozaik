@@ -88,12 +88,12 @@ ansehen¦watch¦izle¦gledaj¦gledaj¦gledaj¦ver¦regarder¦guarda
 schließen¦close¦kapat¦zatvori¦zatvori¦zatvori¦cerrar¦fermer¦chiudi
 JETZT¦NOW¦ŞİMDİ¦SADA¦SADA¦SADA¦AHORA¦MAINTENANT¦ORA
 BEENDET¦ENDED¦BİTTİ¦ZAVRŠENO¦ZAVRŠENO¦ZAVRŠENO¦TERMINADO¦TERMINÉ¦TERMINATO
-Speicher¦Memory¦Bellek¦Memorija¦¦¦Memoria¦Mémoire¦Memoria
-Letzter Absturz¦Last crash¦Son çökme¦Zadnji pad¦¦¦Último cierre inesperado¦Dernier plantage¦Ultimo arresto anomalo
-wenig¦low¦düşük¦malo¦¦¦poca¦faible¦poca
-mittel¦medium¦orta¦srednje¦¦¦media¦moyenne¦media
-viel¦high¦yüksek¦puno¦¦¦mucha¦élevée¦molta
-keiner¦none¦yok¦nijedan¦¦¦ninguno¦aucun¦nessuno
+Speicher¦Memory¦Bellek¦Memorija¦Memorija¦Memorija¦Memoria¦Mémoire¦Memoria
+Letzter Absturz¦Last crash¦Son çökme¦Zadnji pad¦Zadnji pad¦Poslednji pad¦Último cierre inesperado¦Dernier plantage¦Ultimo arresto anomalo
+wenig¦low¦düşük¦malo¦malo¦malo¦poca¦faible¦poca
+mittel¦medium¦orta¦srednje¦srednje¦srednje¦media¦moyenne¦media
+viel¦high¦yüksek¦puno¦puno¦mnogo¦mucha¦élevée¦molta
+keiner¦none¦yok¦nijedan¦nijedan¦nijedan¦ninguno¦aucun¦nessuno
 Sleep-Timer¦Sleep timer¦Uyku zamanlayıcısı¦Tajmer za spavanje¦Tajmer za spavanje¦Tajmer za spavanje¦Temporizador de apagado¦Minuterie de veille¦Timer di spegnimento
 Letzter Kanal¦Last channel¦Son kanal¦Zadnji kanal¦Zadnji kanal¦Zadnji kanal¦Último canal¦Dernière chaîne¦Ultimo canale
 Kein Kanal mit dieser Nummer¦No channel with this number¦Bu numarada kanal yok¦Nema kanala s ovim brojem¦Nema kanala s ovim brojem¦Nema kanala s ovim brojem¦No hay canal con ese número¦Aucune chaîne avec ce numéro¦Nessun canale con questo numero

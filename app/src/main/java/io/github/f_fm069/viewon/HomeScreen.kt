@@ -445,7 +445,11 @@ fun HomeScreen(
                 tab == MenuLogic.SPORT -> SportTab(live) { ch, l -> ZapContext.list = l; ZapContext.key = null; onOpen(ch) }
                 // Markierte Reihe bleibt in der unteren Hälfte stehen (PivotSpec); darüber werden Reihen ausgeblendet, damit oben
                 // Titel und Infos des markierten Titels frei stehen (Billboard)
-                else -> CompositionLocalProvider(
+                else -> {
+                // Einstellungen (else-Zweig unten): kleiner Abstand unter den Kacheln, sonst bleibt beim Scrollen eine große leere Fläche.
+                // Die anderen Tabs brauchen den großen Abstand, damit die markierte Reihe in der unteren Hälfte stehen bleibt.
+                val settingsView = tab !in listOf(0, 1, 2, MenuLogic.FAVS, MenuLogic.MYLIST, MenuLogic.VERLAUF)
+                CompositionLocalProvider(
                     LocalCardGrid provides grid, LocalScrollTop provides { states[tab].scrollToItem(0) },
                     androidx.compose.foundation.gestures.LocalBringIntoViewSpec provides (if (bbTab) pivotSpec else SmoothSpec)
                 ) { LazyColumn(Modifier.fillMaxSize().onGloballyPositioned { listTop[0] = it.positionInRoot().y }.drawWithContent {
@@ -463,7 +467,7 @@ fun HomeScreen(
                         edge.coerceIn(0f, size.height * 0.75f)
                     } else 0f
                     if (ct > 1f) clipRect(top = ct) { this@drawWithContent.drawContent() } else drawContent()
-                }, state = states[tab], contentPadding = PaddingValues(bottom = dpx(420))) {
+                }, state = states[tab], contentPadding = PaddingValues(bottom = if (settingsView) 24.dp else dpx(420))) {
                     when (tab) {
                         0 -> {
                             if (ready.isNotEmpty()) item(key = "hero") { Hero(ready.toList(), heroH, true, onOpen, onPlayNow, header, { heroScroll(states[0]) }) { scope.launch { states[0].animateScrollToItem(0) } } }
@@ -616,6 +620,7 @@ fun HomeScreen(
                         }
                     }
                 } }
+                }
             }
             // Design-Einstellungen: Vorschau steht fest oben rechts, die Einstellungen scrollen darunter weg
             if (DesignPreview.visible) DesignPreviewPanel(Modifier.align(Alignment.TopEnd).padding(top = dpx(84), end = DS.PageX))

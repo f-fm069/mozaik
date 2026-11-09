@@ -258,32 +258,17 @@ fun HomeScreen(
             firstIsContent = isVod && ready.isEmpty()
         )
     }
-    // Kacheln mit echten Bildern aus der eigenen Bibliothek (Runde 15): Szenenbild eines Top-Titels je Bereich,
-    // bei Favoriten und Meiner Liste ein Titel daraus, bei Live TV die Logos der Lieblingssender.
+    // Sender für die Reihe „Live TV“: Lieblingssender und zuletzt gesehene, sonst die ersten der Liste
     val nowChannels = remember(favLive, hist, live) {
         (favLive + hist.filter { it.kind == Kind.LIVE }).distinctBy { it.id }.ifEmpty { live.take(20) }
     }
-    val favVod = Library.favs.mapNotNull { byId[it] }.filter { it.kind != Kind.LIVE }
-    val tileImg by produceState(emptyMap<Int, String>(), topM.size, topS.size, favVod.size, watchList.size) {
-        val used = HashSet<String>()
-        val out = HashMap<Int, String>()
-        suspend fun pick(id: Int, list: List<Item>) {
-            for (c in list.take(14)) {
-                val u = MetaRepo.basic(ctx, c)?.backdrop
-                if (u != null && used.add(u)) { out[id] = u; value = HashMap(out); return }
-            }
-        }
-        pick(1, topM); pick(2, topS)
-        pick(MenuLogic.FAVS, favVod.ifEmpty { topM.drop(3) })
-        pick(MenuLogic.MYLIST, watchList.filter { it.kind != Kind.LIVE }.ifEmpty { topS.drop(3) })
-    }
-    val liveLogos = nowChannels.mapNotNull { it.logo }.take(3)
+    // Schnellzugriff-Kacheln im Stil der Einstellungs-Kacheln: Farbe nur im runden Symbolkreis (HomeTilesLogic)
     val tiles = listOf(
-        QuickTile("Live TV", "${live.size} Sender", 3, Color(0xFF6B3A0E), Color(0xFF2B1708), Color(0xFFF59E0B), logos = liveLogos) { onTab(3) },
-        QuickTile("Filme", "${movies.size} Filme", 1, Color(0xFF1E3A8A), Color(0xFF0F1B45), Color(0xFF60A5FA), image = tileImg[1]) { onTab(1) },
-        QuickTile("Serien", "${series.size} Serien", 2, Color(0xFF4C1D95), Color(0xFF22104A), Color(0xFFC084FC), image = tileImg[2]) { onTab(2) },
-        QuickTile("Favoriten", "Deine Auswahl", 7, Color(0xFF7F1D1D), Color(0xFF3A0B0B), Color(0xFFFB7185), image = tileImg[MenuLogic.FAVS]) { onTab(MenuLogic.FAVS) },
-        QuickTile("Meine Liste", "${watchList.count { it.kind != Kind.LIVE }} Titel", 8, Color(0xFF134E4A), Color(0xFF082725), Color(0xFF2DD4BF), image = tileImg[MenuLogic.MYLIST]) { onTab(MenuLogic.MYLIST) }
+        QuickTile("Live TV", "${live.size} Sender", HomeTilesLogic.LIVE) { onTab(3) },
+        QuickTile("Filme", "${movies.size} Filme", HomeTilesLogic.MOVIES) { onTab(1) },
+        QuickTile("Serien", "${series.size} Serien", HomeTilesLogic.SERIES) { onTab(2) },
+        QuickTile("Favoriten", "Deine Auswahl", HomeTilesLogic.FAVS) { onTab(MenuLogic.FAVS) },
+        QuickTile("Meine Liste", "${watchList.count { it.kind != Kind.LIVE }} Titel", HomeTilesLogic.MYLIST) { onTab(MenuLogic.MYLIST) }
     )
     DisposableEffect(Unit) { onDispose { HomeReturn.returning = true } }
 

@@ -309,15 +309,8 @@ fun RowTitle(
     }
 }
 
-/** Eine Schnellzugriff-Kachel: Farbverlauf, Symbol, Titel, Untertitel, Pfeil und rechts ein eigenes Motiv (kein Film-Cover). */
-class QuickTile(
-    val title: String, val sub: String, val icon: Int, val c1: Color, val c2: Color, val iconColor: Color,
-    /** Runde 15: echtes Bild aus der eigenen Bibliothek (Szenenbild eines Top-Titels) statt der gezeichneten Form */
-    val image: String? = null,
-    /** Live TV: Senderlogos (Favoriten, zuletzt gesehen) */
-    val logos: List<String> = emptyList(),
-    val onClick: () -> Unit
-)
+/** Eine Schnellzugriff-Kachel: Titel, Untertitel, Pfeil und ein runder Symbolkreis in der Bereichsfarbe (siehe HomeTilesLogic). */
+class QuickTile(val title: String, val sub: String, val color: HomeTilesLogic.TileColor, val onClick: () -> Unit)
 
 /** Fünf gleich breite Kacheln über die ganze Zeile. */
 @Composable
@@ -331,102 +324,33 @@ fun QuickTiles(tiles: List<QuickTile>) {
     }
 }
 
+/** Gleicher Aufbau wie die Einstellungs-Kacheln: Fläche des Hintergrunds, dezenter Rahmen, weißer Fokus-Rahmen. */
 @Composable
 private fun QuickTileCard(t: QuickTile, modifier: Modifier) {
     var f by remember { mutableStateOf(false) }
-    val s by animateFloatAsState(if (f) focusScale(1.05f) else 1f, label = "qt")
-    val shape = RoundedCornerShape(dpx(12))
-    Box(
-        modifier.height(dpx(88)).graphicsLayer { scaleX = s; scaleY = s }.focusGlow(f, shape).clip(shape)
-            .background(Brush.horizontalGradient(listOf(t.c1, t.c2)))
-            .border(if (f) 2.dp else 1.dp, if (f) Color.White else t.iconColor.copy(alpha = .22f), shape)
+    val s by animateFloatAsState(if (f) focusScale(1.04f) else 1f, label = "qt")
+    val shape = RoundedCornerShape(dpx(14))
+    val ring = Color(0xFF000000.toInt() or t.color.ring)
+    val ink = Color(0xFF000000.toInt() or t.color.symbol)
+    Row(
+        modifier.height(dpx(88)).graphicsLayer { scaleX = s; scaleY = s }.clip(shape)
+            .background(Surf)
+            .border(if (f) 3.dp else 1.dp, if (f) Color.White else Color(0x1FFFFFFF), shape)
             .onFocusChanged { f = it.isFocused }
             .trackFocus()
             .clickable(onClick = t.onClick)
+            .padding(horizontal = dpx(20)),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(dpx(16))
     ) {
-        // Motiv rechts (gezeichnet, passend zum Bereich), weich in den Farbverlauf überblendet
-        if (t.image != null) AsyncImage(cardBackdrop(t.image), null, Modifier.align(Alignment.CenterEnd).fillMaxHeight().fillMaxWidth(0.72f), contentScale = ContentScale.Crop)
-        else if (t.logos.isNotEmpty()) Row(
-            Modifier.align(Alignment.CenterEnd).fillMaxHeight().padding(end = dpx(46)),
-            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(dpx(8))
-        ) {
-            t.logos.take(3).forEach { u ->
-                Box(Modifier.size(dpx(52)).clip(CircleShape).background(Color(0x33FFFFFF)).padding(dpx(8)), contentAlignment = Alignment.Center) {
-                    AsyncImage(u, null, Modifier.fillMaxSize(), contentScale = ContentScale.Fit)
-                }
-            }
+        Box(Modifier.size(dpx(48)).clip(CircleShape).background(ring.copy(alpha = SettingsHubLogic.CIRCLE_ALPHA)), contentAlignment = Alignment.Center) {
+            MenuIcon(t.color.icon, ink, Modifier.size(dpx(28)))
         }
-        else Canvas(Modifier.align(Alignment.CenterEnd).fillMaxHeight().fillMaxWidth(0.62f)) { tileArt(t.icon, t.iconColor) }
-        Box(Modifier.fillMaxSize().background(Brush.horizontalGradient(0f to t.c1, 0.38f to t.c1.copy(alpha = .85f), 0.7f to t.c1.copy(alpha = .15f), 1f to Color.Transparent)))
-        Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0f to Color.Transparent, 1f to Color(0x55000000))))
-        Row(
-            Modifier.fillMaxSize().padding(start = dpx(22), end = dpx(20)),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(dpx(16))
-        ) {
-            MenuIcon(t.icon, t.iconColor, Modifier.size(dpx(34)))
-            Column(Modifier.weight(1f)) {
-                Text(t.title, color = Color.White, fontSize = spx(18), fontWeight = FontWeight.Bold, maxLines = 1)
-                Text(t.sub, color = Tok.TextMid, fontSize = spx(14), maxLines = 1, overflow = TextOverflow.Ellipsis)
-            }
-            AppIcon(AIcon.Right, Color.White, size = dpx(18))
+        Column(Modifier.weight(1f)) {
+            Text(t.title, color = Color.White, fontSize = spx(18), fontWeight = FontWeight.Bold, maxLines = 1)
+            Text(t.sub, color = Tok.TextMid, fontSize = spx(14), maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
-    }
-}
-
-/** Motive der Kacheln: große, angeschnittene Formen in der Kachelfarbe (Live TV, Filme, Serien, Favoriten, Meine Liste). */
-private fun androidx.compose.ui.graphics.drawscope.DrawScope.tileArt(id: Int, c: Color) {
-    val w = size.width; val h = size.height
-    val line = Stroke(width = h * 0.045f, cap = StrokeCap.Round)
-    val soft = c.copy(alpha = .22f); val mid = c.copy(alpha = .45f); val strong = c.copy(alpha = .7f)
-    when (id) {
-        3 -> { // Live TV: Bildschirm mit Sendewellen
-            drawRoundRect(soft, Offset(w * .38f, h * .22f), Size(w * .5f, h * .62f), CornerRadius(h * .08f))
-            drawRoundRect(strong, Offset(w * .38f, h * .22f), Size(w * .5f, h * .62f), CornerRadius(h * .08f), style = line)
-            for (k in 1..3) drawArc(mid, -60f, 120f, false, Offset(w * .2f - k * h * .16f, h * .5f - k * h * .16f - h * .06f),
-                Size(k * h * .32f + h * .12f, k * h * .32f + h * .12f), style = line)
-            drawCircle(strong, h * .06f, Offset(w * .63f, h * .53f))
-        }
-        1 -> { // Filme: Filmrolle und Filmstreifen
-            val cx = w * .72f; val cy = h * .5f; val r = h * .46f
-            drawCircle(soft, r, Offset(cx, cy)); drawCircle(strong, r, Offset(cx, cy), style = line)
-            for (k in 0 until 6) {
-                val a = Math.toRadians(k * 60.0)
-                drawCircle(mid, r * .2f, Offset(cx + (r * .55f * Math.cos(a)).toFloat(), cy + (r * .55f * Math.sin(a)).toFloat()))
-            }
-            drawRoundRect(mid, Offset(w * .2f, h * .62f), Size(w * .34f, h * .26f), CornerRadius(h * .04f), style = line)
-            for (k in 0 until 5) drawRect(mid, Offset(w * .23f + k * w * .065f, h * .68f), Size(w * .03f, h * .05f))
-        }
-        2 -> { // Serien: gestaffelte Bildschirme mit Abspielzeichen
-            for (k in 2 downTo 0) {
-                val o = k * h * .14f
-                drawRoundRect(if (k == 0) soft else c.copy(alpha = .12f), Offset(w * .36f + o, h * .2f - o * .4f), Size(w * .46f, h * .6f), CornerRadius(h * .07f))
-                drawRoundRect(if (k == 0) strong else mid, Offset(w * .36f + o, h * .2f - o * .4f), Size(w * .46f, h * .6f), CornerRadius(h * .07f), style = line)
-            }
-            val p = Path().apply { moveTo(w * .54f, h * .36f); lineTo(w * .54f, h * .64f); lineTo(w * .54f + h * .26f, h * .5f); close() }
-            drawPath(p, strong)
-        }
-        7 -> { // Favoriten: großes Herz, kleine Herzen
-            fun heart(cx: Float, cy: Float, r: Float, col: Color, fill: Boolean) {
-                val p = Path().apply {
-                    moveTo(cx, cy + r * .9f)
-                    cubicTo(cx - r * 1.3f, cy + r * .1f, cx - r * 1.1f, cy - r * 1f, cx, cy - r * .45f)
-                    cubicTo(cx + r * 1.1f, cy - r * 1f, cx + r * 1.3f, cy + r * .1f, cx, cy + r * .9f)
-                    close()
-                }
-                if (fill) drawPath(p, col) else drawPath(p, col, style = line)
-            }
-            heart(w * .7f, h * .52f, h * .5f, soft, true); heart(w * .7f, h * .52f, h * .5f, strong, false)
-            heart(w * .36f, h * .3f, h * .16f, mid, true); heart(w * .45f, h * .78f, h * .11f, mid, true)
-        }
-        8 -> { // Meine Liste: Lesezeichen-Stapel
-            for (k in 0..2) {
-                val x = w * .44f + k * h * .3f; val top = h * .14f + k * h * .05f
-                val p = Path().apply { moveTo(x, top); lineTo(x + h * .34f, top); lineTo(x + h * .34f, h * .92f); lineTo(x + h * .17f, h * .74f); lineTo(x, h * .92f); close() }
-                drawPath(p, if (k == 2) soft else c.copy(alpha = .12f)); drawPath(p, if (k == 2) strong else mid, style = line)
-            }
-        }
-        else -> drawCircle(soft, h * .45f, Offset(w * .7f, h * .5f))
+        AppIcon(AIcon.Right, Color.White, size = dpx(18))
     }
 }
 

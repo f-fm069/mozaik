@@ -6,7 +6,7 @@
 
 A free, open-source IPTV player for **Android TV, Google TV and Amazon Fire TV**, built with Kotlin and Jetpack Compose and designed for the remote control.
 
-![Mozaik home screen](docs/screenshots/homescreen.jpg)
+![Mozaik – Startseite](docs/screenshots/startseite.png)
 
 > **Mozaik does not provide any content.** It contains no channels, playlists, films or series. It is only a player for playlists that **you** add yourself (Xtream Codes login or M3U address). Only use sources that you are legally allowed to use.
 
@@ -72,12 +72,12 @@ Allow "Install unknown apps" for Downloader (or your file manager) when asked, t
 
 | | |
 |---|---|
-| ![Home screen](docs/screenshots/homescreen.jpg)<br>**Home** – rotating header, quick tiles, live TV now | ![Series details](docs/screenshots/details_series.jpg)<br>**Series details** – seasons, episodes with ratings, director |
-| ![Categories](docs/screenshots/categories_list.jpg)<br>**Automatic genres** – detected in the background | ![Director page](docs/screenshots/producer.jpg)<br>**Cast and crew pages** – with the titles from your playlist |
-| ![Player](docs/screenshots/player.jpg)<br>**Player** – skip intro, audio/subtitles, quality | ![TV guide](docs/screenshots/tvguide.jpg)<br>**TV guide** – timeline with preview |
-| ![Live TV](docs/screenshots/channel_list.jpg)<br>**Live TV** – now and next at a glance | ![Settings](docs/screenshots/settings.jpg)<br>**Settings** – grouped, remote-friendly |
+| ![Mozaik – Startseite](docs/screenshots/startseite.png)<br>**Home** – quick tiles, live TV now, new films | ![Mozaik – Live TV](docs/screenshots/live-tv.png)<br>**Live TV** – now and next at a glance |
+| ![Mozaik – Programmführer](docs/screenshots/programmfuehrer.png)<br>**TV guide** – timeline with programme details | ![Mozaik – Player](docs/screenshots/player.png)<br>**Player** – controls with channel and current show |
+| ![Mozaik – Film-Details](docs/screenshots/film-details.png)<br>**Film details** – play, my list, favourites | ![Mozaik – Serien-Details](docs/screenshots/serie-details.png)<br>**Series details** – seasons and episodes |
+| ![Mozaik – Einstellungen](docs/screenshots/einstellungen.png)<br>**Settings** – grouped, remote-friendly | ![Mozaik – Design](docs/screenshots/einstellungen-design.png)<br>**Design** – colour themes with live preview |
 
-<sub>Screenshots taken on a TV. Film artwork, channel logos and programme data belong to their respective owners; provider categories are blurred.</sub>
+<sub>The screenshots show a fictional test playlist; all channel names, logos and titles are invented.</sub>
 
 ## Your own API keys (optional)
 

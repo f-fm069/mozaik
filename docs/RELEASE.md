@@ -50,6 +50,15 @@ Users of an APK signed with a different key have to uninstall once (Settings > S
 The download link in the README always points to the newest release:
 `https://github.com/f-fm069/mozaik/releases/latest/download/Mozaik.apk`
 
+### Checklist
+
+- [ ] Raise `versionCode` and `versionName` in `app/build.gradle.kts`
+- [ ] Build the signed release APK and rename it to `Mozaik.apk`
+- [ ] Calculate the SHA-256 checksum: `shasum -a 256 Mozaik.apk` (macOS/Linux) or `certutil -hashfile Mozaik.apk SHA256` (Windows)
+- [ ] Upload `Mozaik.apk` to mozaik.tv (`/download/Mozaik.apk`)
+- [ ] Create the GitHub release with the **same** `Mozaik.apk` and add the SHA-256 checksum to the notes
+- [ ] Check that the Downloader code still points to `https://mozaik.tv/download/Mozaik.apk`
+
 ## 3. What users see
 
 - Within a day the bell shows a red dot and "Update available: version 1.2". One click downloads and opens the installer.

@@ -1,11 +1,11 @@
-# Viewon – Hinweise für Claude
+# Mozaik – Hinweise für Claude
 
 ## Datenschutz (hat Vorrang vor allem anderen)
 
 - Mein Klarname und meine E-Mail-Adresse stehen nie im Projekt und werden nie hochgeladen:
   nicht in Dateien, Copyright-Zeilen, README, Doku, Commit-Nachrichten, Autorenfeldern,
   Zweignamen und nicht in lokalen Pfaden wie /Users/<Name>/.
-- Die eigene Copyright-Zeile heißt: Copyright (C) 2026 Viewon contributors
+- Die eigene Copyright-Zeile heißt: Copyright (C) 2026 Mozaik contributors
 - Vor jedem Commit und jedem Hochladen prüfst du den Änderungsumfang auf Name, E-Mail-Adresse
   und lokale Benutzerpfade und sagst es mir, falls du etwas findest.
 - Dazu gehört auch, welcher Autor in Git eingestellt ist (git config user.name / user.email).
@@ -14,7 +14,7 @@
 
 ## 1. Projekt
 
-Viewon ist mein eigenständig weiterentwickelter Fork von Emrodev/IPVIO-Stream:
+Mozaik ist mein eigenständig weiterentwickelter Fork von Emrodev/IPVIO-Stream:
 ein IPTV-Player für Android TV und Fire TV. Die App bringt keine eigenen Inhalte mit.
 Lizenz: GPL-3.0.
 
@@ -34,7 +34,7 @@ Lizenz: GPL-3.0.
 
 ## 4. Offene Aufgaben
 
-- [x] Umbenennung von IPVIO zu Viewon
+- [x] Umbenennung von IPVIO zu Mozaik
   - [x] Etappe 1: sichtbarer Name in der App (Texte, Übersetzungen, App-Name)
   - [x] Package-Name ändern
   - [x] Neues Logo

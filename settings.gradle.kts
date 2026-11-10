@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Viewon"
+rootProject.name = "Mozaik"
 include(":app")

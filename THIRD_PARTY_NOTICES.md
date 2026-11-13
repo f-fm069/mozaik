@@ -29,7 +29,7 @@ The font files in `app/src/main/res/font/` are subsets/copies of the original fo
 
 | Service | Purpose | Notes |
 |---|---|---|
-| The Movie Database (TMDB) | film and series information, images | *This product uses the TMDB API but is not endorsed or certified by TMDB.* Users must provide their own API key and follow the TMDB terms of use. |
+| The Movie Database (TMDB) | film and series information, images | *This product uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.* Users must provide their own API key and follow the TMDB terms of use. |
 | OMDb API | IMDb and Rotten Tomatoes ratings | Users must provide their own API key. |
 | TheIntroDB | intro, recap and credits times | Read access without a key. |
 

@@ -89,7 +89,7 @@ Episoden¦Afleveringen
 lade Infos …¦info laden …
 Links/Rechts = Staffel wechseln¦Links/rechts = seizoen wisselen
 Ähnliche Titel in deiner Playlist¦Vergelijkbare titels in je playlist
-Dieses Produkt verwendet die TMDB-API, wird aber nicht von TMDB unterstützt oder zertifiziert.¦Dit product gebruikt de TMDB-API, maar wordt niet door TMDB ondersteund of gecertificeerd.
+Dieses Produkt verwendet TMDB und die TMDB-APIs, wird aber von TMDB weder unterstützt noch zertifiziert oder anderweitig genehmigt.¦Dit product gebruikt TMDB en de TMDB-API's, maar wordt niet onderschreven, gecertificeerd of anderszins goedgekeurd door TMDB.
 Raster anpassen¦Raster aanpassen
 Spalten¦Kolommen
 Zeilen¦Rijen

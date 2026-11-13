@@ -674,7 +674,7 @@ private fun DetailScreenFull(
             }
             if (similar.isNotEmpty()) item(key = "similar") { SimilarRow("Ähnliche Titel in deiner Playlist", similar, simState, if (memKey?.startsWith("s:") == true) memKey.drop(2) else null, restoreReq) { i -> DetailFocus.last[item.id] = "s:" + i.id; onOpenItem(i) } }
             if (MetaRepo.enabled()) item {
-                Text("Dieses Produkt verwendet die TMDB-API, wird aber nicht von TMDB unterstützt oder zertifiziert.",
+                Text("Dieses Produkt verwendet TMDB und die TMDB-APIs, wird aber von TMDB weder unterstützt noch zertifiziert oder anderweitig genehmigt.",
                     color = Muted, fontSize = 13.sp, modifier = Modifier.padding(top = 32.dp))
             }
         }

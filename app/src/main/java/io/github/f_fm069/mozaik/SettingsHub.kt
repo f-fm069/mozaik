@@ -3,6 +3,7 @@ package io.github.f_fm069.mozaik
 import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -22,6 +23,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -1126,7 +1128,7 @@ private fun ApiKeysPage(ctx: Context) {
 
     SectionTitle("TMDB (Film-Infos)")
     Field(tmdb, { tmdb = it; tmdbStatus = "" }, "TMDB API-Schlüssel (v3)")
-    Hint("Kostenlos unter themoviedb.org: Konto anlegen, anmelden, dann Einstellungen > API > API-Schlüssel anfordern und den 32-stelligen „API Key“ eintragen. Dieses Produkt verwendet die TMDB-API, wird aber nicht von TMDB unterstützt oder zertifiziert.")
+    Hint("Kostenlos unter themoviedb.org: Konto anlegen, anmelden, dann Einstellungen > API > API-Schlüssel anfordern und den 32-stelligen „API Key“ eintragen. Dieses Produkt verwendet TMDB und die TMDB-APIs, wird aber von TMDB weder unterstützt noch zertifiziert oder anderweitig genehmigt.")
     if (tmdbStatus.isNotBlank()) Text(tmdbStatus, color = if (tmdbStatus == "Schlüssel gültig") Accent2 else Muted, fontSize = 16.sp)
 
     SectionTitle("OMDb (IMDb- und Rotten-Tomatoes-Wertung)")
@@ -1157,7 +1159,9 @@ private fun ApiKeysPage(ctx: Context) {
 private fun AboutPage(ctx: Context) {
     Text("Mozaik · Version " + appVersion(ctx), color = Color.White, fontSize = 18.sp)
     Hint("Mozaik ist ein Player und liefert selbst keine Inhalte. Nutze nur Quellen, für die du eine Berechtigung hast.")
-    Hint("Dieses Produkt verwendet die TMDB-API, wird aber nicht von TMDB unterstützt oder zertifiziert. Wertungen: OMDb. Intro-Zeiten: TheIntroDB.")
+    Hint("Dieses Produkt verwendet TMDB und die TMDB-APIs, wird aber von TMDB weder unterstützt noch zertifiziert oder anderweitig genehmigt. Wertungen: OMDb. Intro-Zeiten: TheIntroDB.")
+    // Offizielles TMDB-Logo (Pflicht laut TMDB-Bedingungen), bewusst kleiner als der App-Name
+    Image(painterResource(R.drawable.tmdb_logo), contentDescription = "TMDB", modifier = Modifier.height(18.dp))
     Hint("Mozaik ist freie Software unter der GNU General Public License v3 (GPL-3.0). Verwendete Bibliotheken: AndroidX/Jetpack Compose, Media3 (Apache 2.0), OkHttp, Coil (Apache 2.0), Jellyfin FFmpeg-Decoder (GPL-3.0), Schriften Outfit und Inter (SIL Open Font License).")
     Hint("Mozaik basiert auf IPVIO Stream von Emrodev.")
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {

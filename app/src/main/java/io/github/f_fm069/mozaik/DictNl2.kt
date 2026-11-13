@@ -200,7 +200,7 @@ Nächste Aktualisierung:¦Volgende update:
 Zugangsdaten werden nur auf diesem Gerät gespeichert und hier nicht angezeigt. Es ist immer eine Playlist aktiv. Mit „Aktivieren“ wechselst du die Liste.¦Inloggegevens worden alleen op dit apparaat opgeslagen en hier niet getoond. Er is altijd één playlist actief. Met „Activeren” wissel je van lijst.
 Mozaik · Version¦Mozaik · Versie
 Mozaik ist ein Player und liefert selbst keine Inhalte. Nutze nur Quellen, für die du eine Berechtigung hast.¦Mozaik is een speler en levert zelf geen inhoud. Gebruik alleen bronnen waarvoor je toestemming hebt.
-Dieses Produkt verwendet die TMDB-API, wird aber nicht von TMDB unterstützt oder zertifiziert. Intro-Zeiten: TheIntroDB.¦Dit product gebruikt de TMDB-API, maar wordt niet door TMDB ondersteund of gecertificeerd. Introtijden: TheIntroDB.
+Dieses Produkt verwendet TMDB und die TMDB-APIs, wird aber von TMDB weder unterstützt noch zertifiziert oder anderweitig genehmigt. Intro-Zeiten: TheIntroDB.¦Dit product gebruikt TMDB en de TMDB-API's, maar wordt niet onderschreven, gecertificeerd of anderszins goedgekeurd door TMDB. Introtijden: TheIntroDB.
 Systemeinstellungen der App¦Systeeminstellingen van de app
 Setzt Ansicht, Design, Menü, Player, Ton und Start auf die Standardwerte. Playlists, Favoriten, Verlauf und Fortsetzen-Positionen bleiben erhalten. Zwischenspeicher leerst du unter „Speicher“.¦Zet weergave, ontwerp, menu, speler, geluid en start terug op de standaardwaarden. Playlists, favorieten, geschiedenis en hervatposities blijven behouden. De cache maak je leeg onder „Opslag”.
 Directing¦Regie

@@ -75,7 +75,7 @@ Allow "Install unknown apps" for Downloader (or your file manager) when asked, t
 | ![Mozaik - TV guide](docs/screenshots/programmfuehrer.png)<br>**TV guide** – timeline with programme details | ![Mozaik - Player](docs/screenshots/player.png)<br>**Player** – controls with channel and current show |
 | ![Mozaik - Film details](docs/screenshots/film-details.png)<br>**Film details** – description, rating and artwork from TMDB | ![Mozaik - Categories](docs/screenshots/kategorien.png)<br>**Categories** – automatic genres with posters |
 | ![Mozaik - Series details](docs/screenshots/serie-details.png)<br>**Series details** – seasons and episodes | ![Mozaik - Settings](docs/screenshots/einstellungen.png)<br>**Settings** – grouped, remote-friendly |
-| ![Mozaik - Design](docs/screenshots/einstellungen-design.png)<br>**Design** – colour themes with live preview | |
+| ![Mozaik - Design](docs/screenshots/einstellungen-design.png)<br>**Design** – colour themes with live preview | ![Mozaik - About](docs/screenshots/ueber-mozaik.png)<br>**About** – licences and TMDB attribution |
 
 <sub>The screenshots use a test playlist: the series, channel names, logos and programme data are invented; the films are free Blender open movies.</sub>
 
@@ -107,7 +107,7 @@ The app ships **without any API keys**. You can enter your own free keys in the 
 ### Enter the keys in the app
 Settings > **API keys**: paste the key into the field, press **Save and check** (a green "Key valid" confirms it) and restart the app once. Tip: type long keys with the phone import or an USB keyboard instead of the remote.
 
-*This product uses the TMDB API but is not endorsed or certified by TMDB.*
+<img src="docs/tmdb-logo.svg" alt="TMDB logo" height="20"> *This product uses TMDB and the TMDB APIs but is not endorsed, certified, or otherwise approved by TMDB.*
 
 ## Building
 

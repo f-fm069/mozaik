@@ -17,3 +17,6 @@ secrets.properties
 *.jks
 *.keystore
 keystore.properties
+
+# Original TMDB logo download (only the converted version in app resources and docs/ is tracked)
+/blue_square_1-*.svg

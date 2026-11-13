@@ -6,7 +6,7 @@
 
 A free, open-source IPTV player for **Android TV, Google TV and Amazon Fire TV**, built with Kotlin and Jetpack Compose and designed for the remote control.
 
-![Mozaik – Startseite](docs/screenshots/startseite.png)
+![Mozaik - Home](docs/screenshots/startseite.png)
 
 > **Mozaik does not provide any content.** It contains no channels, playlists, films or series. It is only a player for playlists that **you** add yourself (Xtream Codes login or M3U address). Only use sources that you are legally allowed to use.
 
@@ -70,14 +70,16 @@ Allow "Install unknown apps" for Downloader (or your file manager) when asked, t
 
 ## Screenshots
 
-| | |
+| ![Mozaik - Home](docs/screenshots/startseite.png)<br>**Home** – rotating header, quick tiles, live TV now | ![Mozaik - Live TV](docs/screenshots/live-tv.png)<br>**Live TV** – now and next at a glance |
 |---|---|
-| ![Mozaik – Startseite](docs/screenshots/startseite.png)<br>**Home** – quick tiles, live TV now, new films | ![Mozaik – Live TV](docs/screenshots/live-tv.png)<br>**Live TV** – now and next at a glance |
-| ![Mozaik – Programmführer](docs/screenshots/programmfuehrer.png)<br>**TV guide** – timeline with programme details | ![Mozaik – Player](docs/screenshots/player.png)<br>**Player** – controls with channel and current show |
-| ![Mozaik – Film-Details](docs/screenshots/film-details.png)<br>**Film details** – play, my list, favourites | ![Mozaik – Serien-Details](docs/screenshots/serie-details.png)<br>**Series details** – seasons and episodes |
-| ![Mozaik – Einstellungen](docs/screenshots/einstellungen.png)<br>**Settings** – grouped, remote-friendly | ![Mozaik – Design](docs/screenshots/einstellungen-design.png)<br>**Design** – colour themes with live preview |
+| ![Mozaik - TV guide](docs/screenshots/programmfuehrer.png)<br>**TV guide** – timeline with programme details | ![Mozaik - Player](docs/screenshots/player.png)<br>**Player** – controls with channel and current show |
+| ![Mozaik - Film details](docs/screenshots/film-details.png)<br>**Film details** – description, rating and artwork from TMDB | ![Mozaik - Categories](docs/screenshots/kategorien.png)<br>**Categories** – automatic genres with posters |
+| ![Mozaik - Series details](docs/screenshots/serie-details.png)<br>**Series details** – seasons and episodes | ![Mozaik - Settings](docs/screenshots/einstellungen.png)<br>**Settings** – grouped, remote-friendly |
+| ![Mozaik - Design](docs/screenshots/einstellungen-design.png)<br>**Design** – colour themes with live preview | |
 
-<sub>The screenshots show a fictional test playlist; all channel names, logos and titles are invented.</sub>
+<sub>The screenshots use a test playlist: the series, channel names, logos and programme data are invented; the films are free Blender open movies.</sub>
+
+<sub>**Credits:** Big Buck Bunny (c) Blender Foundation, CC BY 3.0 · Sintel (c) Blender Foundation, CC BY 3.0 · Elephants Dream (c) Blender Foundation / Netherlands Media Art Institute, CC BY 2.5 · Cosmos Laundromat (c) Blender Foundation, CC BY 4.0 · Spring (c) Blender Animation Studio, CC BY 4.0. Film posters, backdrops and descriptions via TMDB.</sub>
 
 ## Your own API keys (optional)
 

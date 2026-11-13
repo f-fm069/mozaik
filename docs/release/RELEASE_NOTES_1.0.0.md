@@ -8,6 +8,7 @@ First public release of Mozaik, a free, open-source IPTV player for Android TV a
 - Films and series with automatic genres, posters, descriptions and ratings (optional: bring your own free TMDB API key).
 - Remote-friendly settings, colour themes with live preview.
 - No account, no ads, no tracking. Your playlists and keys stay on your device.
+- Updates from inside the app: Mozaik checks GitHub for a new release at most once a day (can be turned off in Settings > About Mozaik). See [PRIVACY.md](PRIVACY.md).
 
 ## Your own TMDB key (optional, free)
 
@@ -32,4 +33,6 @@ Based on [IPVIO-Stream](https://github.com/Emrodev/IPVIO-Stream) by Emrodev (GPL
 
 ## Checksum
 
-SHA-256: `<paste checksum here>`
+SHA-256 of `Mozaik-1.0.0.apk`: `6d73a08c8324c16d8b93de9fde5ba01063aa8418a3d733d5d50e90901dc9c621`
+
+Signing certificate: `CN=Mozaik`, SHA-256 `4efe05232eaecae57fe8c57307b5572ec4cb0bd7bf63a17fd7e1ea8160714128`

@@ -19,11 +19,19 @@ fun secretId(name: String): String =
 
 // Release signing from "keystore.properties" (ignored by Git, see docs/RELEASE.md). Every release MUST be signed with the
 // same key: only then does Android install an update over the old version and keep history, favorites and settings.
+// Each value can also come from an environment variable (MOZAIK_STORE_FILE, MOZAIK_STORE_PASSWORD, MOZAIK_KEY_ALIAS,
+// MOZAIK_KEY_PASSWORD); the file wins when both are set. Passwords never belong in a file that is checked in.
 val keystore = Properties().apply {
     val f = rootProject.file("keystore.properties")
     if (f.exists()) f.inputStream().use { load(it) }
 }
-val hasKeystore = listOf("storeFile", "storePassword", "keyAlias", "keyPassword").all { !keystore.getProperty(it).isNullOrBlank() }
+fun signing(prop: String, env: String): String? =
+    keystore.getProperty(prop)?.takeIf { it.isNotBlank() } ?: System.getenv(env)?.takeIf { it.isNotBlank() }
+val signStoreFile = signing("storeFile", "MOZAIK_STORE_FILE")
+val signStorePassword = signing("storePassword", "MOZAIK_STORE_PASSWORD")
+val signKeyAlias = signing("keyAlias", "MOZAIK_KEY_ALIAS")
+val signKeyPassword = signing("keyPassword", "MOZAIK_KEY_PASSWORD")
+val hasKeystore = listOf(signStoreFile, signStorePassword, signKeyAlias, signKeyPassword).all { it != null }
 
 android {
     namespace = "io.github.f_fm069.mozaik"
@@ -36,8 +44,8 @@ android {
         minSdk = 24
         targetSdk = 37
         // Raise both for every release; the GitHub release tag must match versionName (e.g. tag "v1.1").
-        versionCode = 2
-        versionName = "1.1"
+        versionCode = 3
+        versionName = "1.0.0"
 
         buildConfigField("String", "TMDB_KEY", "\"${secret("TMDB_KEY")}\"")
         buildConfigField("String", "OMDB_KEY", "\"${secret("OMDB_KEY")}\"")
@@ -47,10 +55,10 @@ android {
 
     signingConfigs {
         if (hasKeystore) create("release") {
-            storeFile = rootProject.file(keystore.getProperty("storeFile"))
-            storePassword = keystore.getProperty("storePassword")
-            keyAlias = keystore.getProperty("keyAlias")
-            keyPassword = keystore.getProperty("keyPassword")
+            storeFile = rootProject.file(signStoreFile!!)
+            storePassword = signStorePassword
+            keyAlias = signKeyAlias
+            keyPassword = signKeyPassword
         }
     }
 
@@ -58,7 +66,8 @@ android {
         release {
             if (hasKeystore) signingConfig = signingConfigs.getByName("release")
             optimization {
-                enable = true
+                // Off for 1.0.0: with R8 the release crashed at start (IllegalAccessError, repackaged Kotlin classes).
+                enable = false
                 packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
             }
         }

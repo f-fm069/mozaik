@@ -24,13 +24,21 @@ keyPassword=android
 
 ### Starting fresh with your own key (recommended for the future)
 
-Android Studio: **Build > Generate Signed App Bundle / APK > APK > Create new…**, or:
+Create the key **outside** the project folder, with a neutral name in the certificate (`-dname "CN=Mozaik"`: no personal
+name, organisation or place). `keytool` then asks only for the passwords; type them yourself and never write them into a
+file that is checked in:
 
 ```
-keytool -genkeypair -v -keystore mozaik-release.jks -alias mozaik -keyalg RSA -keysize 4096 -validity 36500
+mkdir -p ~/keys
+keytool -genkeypair -v -keystore ~/keys/mozaik-release.jks -alias mozaik -keyalg RSA -keysize 4096 -validity 36500 -dname "CN=Mozaik"
 ```
 
-Then the same `keystore.properties` with your file, alias and passwords.
+Then create `keystore.properties` in the project root (ignored by Git) with the absolute path to that file, the alias
+and the passwords. Alternatively leave the passwords out of the file and set environment variables instead:
+`MOZAIK_STORE_FILE`, `MOZAIK_STORE_PASSWORD`, `MOZAIK_KEY_ALIAS`, `MOZAIK_KEY_PASSWORD` (a value in the file wins).
+
+Back up `mozaik-release.jks` and its passwords in a safe place (e.g. a password manager and a USB stick). Without it no
+update can be installed over an existing installation.
 Users of an APK signed with a different key have to uninstall once (Settings > Storage > Create backup first, then restore).
 
 **Never commit the key or `keystore.properties`.** Both are already in `.gitignore`.

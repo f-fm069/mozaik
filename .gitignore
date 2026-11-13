@@ -18,5 +18,8 @@ secrets.properties
 *.keystore
 keystore.properties
 
+# Signed release APKs and checksums (published on the release page, not in Git)
+/release-out/
+
 # Original TMDB logo download (only the converted version in app resources and docs/ is tracked)
 /blue_square_1-*.svg

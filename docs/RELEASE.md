@@ -48,11 +48,12 @@ Users of an APK signed with a different key have to uninstall once (Settings > S
 1. In `app/build.gradle.kts` raise `versionCode` (by 1) and `versionName` (e.g. `"1.2"`).
 2. Build the signed APK: `gradlew assembleRelease` (or Build > Generate Signed App Bundle / APK).
    The file is `app/build/outputs/apk/release/app-release.apk`.
-3. Rename it to **`Mozaik.apk`**.
+3. Copy it twice: **`Mozaik-<version>.apk`** (e.g. `Mozaik-1.2.apk`) and an identical **`Mozaik.apk`**.
 4. On GitHub: **Releases > Draft a new release**
    - Tag: `v` + versionName, e.g. `v1.2` (the app compares this tag with its own version)
    - Title and notes: what is new (the first lines appear in the app)
-   - Attach `Mozaik.apk`
+   - Attach both files and the `.sha256` file. `Mozaik.apk` must be there with exactly this name: the README and
+     Downloader link `…/releases/latest/download/Mozaik.apk` and the in-app update use it.
    - **Publish release** (not "pre-release", the app ignores those)
 
 The download link in the README always points to the newest release:
@@ -61,11 +62,10 @@ The download link in the README always points to the newest release:
 ### Checklist
 
 - [ ] Raise `versionCode` and `versionName` in `app/build.gradle.kts`
-- [ ] Build the signed release APK and rename it to `Mozaik.apk`
-- [ ] Calculate the SHA-256 checksum: `shasum -a 256 Mozaik.apk` (macOS/Linux) or `certutil -hashfile Mozaik.apk SHA256` (Windows)
-- [ ] Upload `Mozaik.apk` to mozaik.tv (`/download/Mozaik.apk`)
-- [ ] Create the GitHub release with the **same** `Mozaik.apk` and add the SHA-256 checksum to the notes
-- [ ] Check that the Downloader code still points to `https://mozaik.tv/download/Mozaik.apk`
+- [ ] Build the signed release APK and save it as `Mozaik-<version>.apk` plus an identical copy `Mozaik.apk`
+- [ ] Calculate the SHA-256 checksum: `shasum -a 256 Mozaik-<version>.apk` (macOS/Linux) or `certutil -hashfile Mozaik-<version>.apk SHA256` (Windows)
+- [ ] Create the GitHub release (https://github.com/f-fm069/mozaik/releases/latest) with **both** APK files and the `.sha256` file, and add the SHA-256 checksum to the notes
+- [ ] Check that `https://github.com/f-fm069/mozaik/releases/latest/download/Mozaik.apk` downloads the new version (this is also the Downloader address)
 
 ## 3. What users see
 

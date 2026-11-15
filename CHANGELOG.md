@@ -2,6 +2,17 @@
 
 Versionen bis 1.1 stammen aus IPVIO Stream.
 
+## Unreleased
+**Categories** (ported from IPVIO Stream 1.4.2, GPL-3.0)
+- Hide categories in Live TV, Movies and Series: hold OK (or press the menu key) on a category and choose "Hide category"; hidden ones are listed under "Hidden" at the end and can be brought back from there
+- Sort categories: provider order, A–Z or your own order; move a category up, down or to the top from the same menu
+- Home, Movies and Series rows follow the category order and leave out hidden categories
+- Settings > Genres & categories: search categories (e.g. "EU | DE"), switch many at once and save them together with "Apply"; ignore whole groups by the provider's tag ("TR |", "[EN]") without reloading the playlist; "Turn all back on"
+- Switching many categories no longer stutters: the list is filtered in the background
+
+**Home**
+- "Recently added" is hidden by default (button on Movies/Series and the rows of that name); turn it back on in Settings > General > Show "Recently added"
+
 ## 1.1
 **Updates and your data**
 - In-app updates from GitHub Releases: the app checks once a day and shows "Update available" in the bell; one click downloads and installs

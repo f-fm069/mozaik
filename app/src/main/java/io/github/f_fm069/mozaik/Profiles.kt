@@ -53,7 +53,9 @@ object Profiles {
     private val SCOPED = listOf(
         "ipvio_settings", "ipvio_lib", "ipvio_quality", "ipvio_hist", "ipvio_watch", "ipvio_catfavs",
         "ipvio_variants", "ipvio_guide", "ipvio_browse", "ipvio_cat", "ipvio_general", "ipvio_lang",
-        "ipvio_chlists", "ipvio_tracks", "ipvio_eprog"
+        "ipvio_chlists", "ipvio_tracks", "ipvio_eprog",
+        // Kategorien ausblenden, ignorieren und sortieren
+        "ipvio_hidecats", "ipvio_ignored", "ipvio_catorder"
     )
 
     val list = mutableStateListOf<Profile>()

@@ -1,6 +1,6 @@
 # Third-party notices
 
-Mozaik is licensed under the GNU General Public License v3 (see `LICENSE`). Mozaik is a fork of [IPVIO Stream](https://github.com/Emrodev/IPVIO-Stream) by Emrodev, which is also licensed under the GPL-3.0. Mozaik uses the following third-party components.
+Mozaik is licensed under the GNU General Public License v3 (see `LICENSE`). Mozaik is a fork of [IPVIO Stream](https://github.com/Emrodev/IPVIO-Stream) by Emrodev, which is also licensed under the GPL-3.0. Mozaik includes later changes from IPVIO Stream (up to version 1.4.2), adapted for Mozaik, for example hiding and sorting categories. Mozaik uses the following third-party components.
 
 ## Libraries
 

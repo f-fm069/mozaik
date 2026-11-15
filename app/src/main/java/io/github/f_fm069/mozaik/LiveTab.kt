@@ -74,20 +74,25 @@ fun LiveTab(liveAll: List<Item>, groupsAll: Map<String, List<Item>>, favsAll: Li
     val favs = remember(favsAll, srcK) { if (srcK < 0) favsAll else favsAll.filter { it.src == srcK } }
     CatFavs.init(ctx)
     ChannelLists.init(ctx)
+    HiddenCats.init(ctx)
+    CatOrder.init(ctx)
     // Zuletzt gewählte Kategorie / Liste (Runde 14): nach dem Zurück aus dem Player und nach einem Neustart wieder dieselbe
     var sel by remember {
         val saved = LiveMemory.sel(ctx)?.takeIf { k ->
-            (k == FAV_CAT && favs.isNotEmpty()) || k == "ALL" || k in groups || ChannelLists.byKey(k) != null || k == "REC"
+            (k == FAV_CAT && favs.isNotEmpty()) || k == "ALL" || (k in groups && k !in HiddenCats.list) || ChannelLists.byKey(k) != null || k == "REC"
         }
         mutableStateOf(saved ?: if (favs.isNotEmpty()) FAV_CAT else "ALL")
     }
-    val favCats = CatFavs.list.filter { it in groups }
+    val favCats = CatFavs.list.filter { it in groups && it !in HiddenCats.list }
     val myLists = ChannelLists.lists.toList()
     val byId = remember(live) { live.associateBy { it.id } }
     // Reihenfolge: Favoriten, eigene Senderlisten, „Neue Senderliste“, alle Sender, Kategorien
     // Aufnahmen (Runde 20): eigene Kategorie, sobald es welche gibt
     val recs = remember(Recorder.active.size, sel == "REC") { Recorder.list(ctx).map { Recorder.itemOf(it) } }
-    val names = (if (PlaylistStore.lists.size > 1) listOf("PL") else emptyList()) + listOf("GUIDE", FAV_CAT) + (if (recs.isNotEmpty()) listOf("REC") else emptyList()) + myLists.map { ChannelListLogic.key(it) } + listOf("NEW", "ALL") + favCats + groups.keys.filter { it !in favCats }
+    // Kategorien des Anbieters in der gewählten Sortierung, ohne ausgeblendete; „Ausgeblendet“ am Ende, wenn es welche gibt
+    val sortedCats = remember(groups, CatOrder.version) { CatOrder.sorted(CatOrder.LIVE, groups.keys.toList()) }
+    val names = (if (PlaylistStore.lists.size > 1) listOf("PL") else emptyList()) + listOf("GUIDE", FAV_CAT) + (if (recs.isNotEmpty()) listOf("REC") else emptyList()) + myLists.map { ChannelListLogic.key(it) } + listOf("NEW", "ALL") + favCats +
+        sortedCats.filter { it !in favCats && it !in HiddenCats.list } + (if (HiddenCats.list.any { it in groups }) listOf(HIDDEN_CAT) else emptyList())
     val curList = ChannelLists.byKey(sel)
     val list = when {
         sel == FAV_CAT -> favs
@@ -193,6 +198,19 @@ fun LiveTab(liveAll: List<Item>, groupsAll: Map<String, List<Item>>, favsAll: Li
                         }
                         return@itemsIndexed
                     }
+                    if (n == HIDDEN_CAT) {
+                        // Ausgeblendete Kategorien: OK öffnet die Liste zum Zurückholen
+                        var hidMenu by remember { mutableStateOf(false) }
+                        val hid = HiddenCats.list.filter { it in groups }
+                        Box {
+                            CatRow(Lang.tr("Ausgeblendet") + " (" + hid.size + ")", -1, false, Modifier, onFocus = {}, onRight = {}, onFav = { hidMenu = true }, icon = AIcon.Sliders, raw = true) { hidMenu = true }
+                            if (hidMenu) OptionPopup(listOf("Alle wieder einblenden") + hid, -1, { hidMenu = false }) { i ->
+                                hidMenu = false
+                                if (i == 0) HiddenCats.showAll(ctx) else HiddenCats.show(ctx, hid[i - 1])
+                            }
+                        }
+                        return@itemsIndexed
+                    }
                     if (n == "NEW") {
                         CatRow("Neue Senderliste", -1, false, Modifier, onFocus = {}, onRight = { runCatching { firstChan.requestFocus() } }, onFav = {}, icon = AIcon.Plus) { newList(null) }
                         return@itemsIndexed
@@ -218,14 +236,39 @@ fun LiveTab(liveAll: List<Item>, groupsAll: Map<String, List<Item>>, favsAll: Li
                         else -> groups[n]?.size ?: 0
                     }
                     var listMenu by remember { mutableStateOf(false) }
+                    var catMenu by remember { mutableStateOf(false) }
+                    var sortMenu by remember { mutableStateOf(false) }
+                    val plainCat = ml == null && n != FAV_CAT && n != "ALL" && n != "REC" && groups.containsKey(n)
                     Box {
                         CatRow(
                             label, count, n == sel,
                             if (n == sel) Modifier.focusRequester(ContentFocus.req) else Modifier,
                             onFocus = { sel = n }, onRight = { runCatching { firstChan.requestFocus() } },
-                            onFav = { if (ml != null) listMenu = true else if (n != FAV_CAT && n != "ALL" && n != "REC") CatFavs.toggle(ctx, n) },
+                            onFav = { if (ml != null) listMenu = true else if (plainCat) catMenu = true },
                             icon = icon, raw = ml != null
                         ) { runCatching { firstChan.requestFocus() } }
+                        // Menü einer Anbieter-Kategorie (langes OK / Menütaste): Favorit, ausblenden, verschieben, sortieren
+                        if (catMenu && plainCat) OptionPopup(
+                            listOf(
+                                if (n in CatFavs.list) "Aus Favoriten entfernen" else "Zu Favoriten hinzufügen", "Kategorie ausblenden",
+                                "Nach oben verschieben", "Nach unten verschieben", "An den Anfang verschieben", "Kategorien sortieren …"
+                            ), -1, { catMenu = false }
+                        ) { i ->
+                            catMenu = false
+                            val all = groupsAll.keys.toList()
+                            when (i) {
+                                0 -> CatFavs.toggle(ctx, n)
+                                1 -> { if (sel == n) sel = "ALL"; HiddenCats.hide(ctx, n) }
+                                2 -> CatOrder.move(ctx, CatOrder.LIVE, all, n, -1)
+                                3 -> CatOrder.move(ctx, CatOrder.LIVE, all, n, 1)
+                                4 -> CatOrder.toTop(ctx, CatOrder.LIVE, all, n)
+                                else -> sortMenu = true
+                            }
+                        }
+                        if (sortMenu) OptionPopup(SORT_MODES, CatOrder.mode(CatOrder.LIVE), { sortMenu = false }) { i ->
+                            sortMenu = false
+                            CatOrder.setMode(ctx, CatOrder.LIVE, i)
+                        }
                         // Menü einer eigenen Liste: umbenennen, löschen
                         if (listMenu && ml != null) OptionPopup(listOf("Umbenennen", "Liste löschen"), -1, { listMenu = false }) { i ->
                             listMenu = false

@@ -9,10 +9,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.withContext
 import okhttp3.Call
@@ -63,16 +66,48 @@ object PlaylistStore {
      */
     private fun setItems(l: List<Item>, shown: List<Item>? = null) {
         LibMatch.reset()
-        filtered = shown ?: shownOf(l); filteredFor = l; filteredVer = filterVer()
+        filtered = shown ?: shownOf(l); filteredFor = l; filteredVer = filterVer(); filteredBase = baseVer()
         rawChannels = l
     }
 
-    /** Stand der Filter (Jugendschutz, „gestörte Titel ausblenden“): ändert er sich, wird die gezeigte Liste neu gebildet. */
-    private fun filterVer(): Int = Parental.version * 10_000 + (if (DeadLinks.hide) DeadLinks.version else 0)
+    /** Stand der Filter (Jugendschutz, „gestörte Titel ausblenden“, Ignorieren): ändert er sich, wird die gezeigte Liste neu gebildet. */
+    private fun filterVer(): Int = Parental.version * 10_000 + (if (DeadLinks.hide) DeadLinks.version else 0) + IgnoredGroups.version * 1_000_000
+
+    /** Filterstand ohne den Teil „Ignorieren“: Eine Änderung hier (z. B. Jugendschutz) wirkt sofort. */
+    private fun baseVer(): Int = Parental.version * 10_000 + (if (DeadLinks.hide) DeadLinks.version else 0)
+
+    /** Steigt, wenn ein Neufiltern im Hintergrund fertig ist, damit Leser von [channels] die neue Liste sehen. */
+    private var refilterTick by mutableIntStateOf(0)
+    @Volatile private var filteredBase = -1
+    @Volatile private var pendingVer = -1
+    private var refilterJob: Job? = null
+    private val refilterScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    /**
+     * Nur der Filter „Ignorieren“ hat sich geändert (Kategorien oder Gruppen umgeschaltet): die ganze Liste im
+     * Hintergrund filtern statt im Hauptthread beim Zeichnen. Bis dahin sehen Leser die bisherige Liste.
+     * Übernommen aus IPVIO Stream (GPL-3.0); behebt das Ruckeln und Abstürzen beim Abhaken vieler Kategorien.
+     */
+    @Synchronized private fun refilterLater(raw: List<Item>, ver: Int) {
+        if (pendingVer == ver) return
+        pendingVer = ver
+        refilterJob?.cancel()
+        refilterJob = refilterScope.launch {
+            val r = shownOf(raw)
+            withContext(Dispatchers.Main) {
+                if (rawChannels === raw && filterVer() == ver) {
+                    filtered = r; filteredFor = raw; filteredVer = ver; filteredBase = baseVer()
+                    refilterTick++
+                }
+                if (pendingVer == ver) pendingVer = -1
+            }
+        }
+    }
 
     private fun shownOf(l: List<Item>): List<Item> {
         var r = if (Parental.hideAdult) Parental.filter(l) else l
         if (DeadLinks.hide) r = DeadLinks.filter(r)
+        if (!IgnoredGroups.isEmpty) r = IgnoredGroups.filter(r)
         return r
     }
     @Volatile private var filteredFor: List<Item>? = null
@@ -93,12 +128,21 @@ object PlaylistStore {
         get() {
             val raw = rawChannels
             val ver = filterVer()
-            if (!Parental.hideAdult && !DeadLinks.hide) return raw
+            @Suppress("UNUSED_VARIABLE") val tick = refilterTick
+            if (!Parental.hideAdult && !DeadLinks.hide && IgnoredGroups.isEmpty) return raw
+            if (raw === filteredFor && ver != filteredVer && baseVer() == filteredBase) {
+                // Nur „Ignorieren“ hat sich geändert: kurz die bisherige Liste zeigen, im Hintergrund filtern
+                refilterLater(raw, ver)
+                return filtered
+            }
             if (raw !== filteredFor || ver != filteredVer) {
-                filtered = shownOf(raw); filteredFor = raw; filteredVer = ver
+                filtered = shownOf(raw); filteredFor = raw; filteredVer = ver; filteredBase = baseVer()
             }
             return filtered
         }
+
+    /** Alle geladenen Einträge ohne die Filter „Ignorieren“, Jugendschutz und gestörte Titel – zum Verwalten der Gruppen. */
+    fun unfilteredChannels(): List<Item> = rawChannels
 
     var loading by mutableStateOf(false)
     var error by mutableStateOf<String?>(null)
@@ -779,6 +823,7 @@ object PlaylistStore {
     /** Liste aus der aktiven und den geladenen weiteren Playlists bilden und anzeigen (Hintergrund-Thread). */
     private fun rebuild(c: Context) {
         val u = primaryUrl ?: return
+        IgnoredGroups.init(c)
         val urls = extraUrls(c)
         extras.keys.retainAll(urls.toSet())
         val ex = urls.mapNotNull { url -> extras[url]?.let { url to it } }

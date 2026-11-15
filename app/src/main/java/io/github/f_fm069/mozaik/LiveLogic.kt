@@ -3,6 +3,12 @@ package io.github.f_fm069.mozaik
 /** Schlüssel der Favoriten in der Kategorie-Auswahl (Live TV und Player). */
 const val FAV_CAT = "#FAV"
 
+/** Schlüssel des Eintrags „Ausgeblendet“ am Ende der Kategorienliste (Live TV, Filme, Serien). */
+const val HIDDEN_CAT = "#HIDDEN"
+
+/** Sortier-Möglichkeiten für Kategorien, in der Reihenfolge von [CatOrderLogic] (Anbieter, A–Z, eigene). */
+val SORT_MODES = listOf("Anbieter-Reihenfolge", "A–Z", "Eigene Reihenfolge")
+
 /** Eigene Senderliste: Name und Sender in eigener Reihenfolge (Sender-IDs wie bei den Favoriten). */
 data class ChList(val id: Int, val name: String, val ids: List<String>)
 

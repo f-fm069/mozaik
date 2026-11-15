@@ -41,10 +41,11 @@ Lizenz: GPL-3.0.
   - [x] Update-Funktion auf meinen Fork umstellen
 - [x] README überarbeiten und Fork-Hinweis ergänzen
 - [x] Spendenlink in .github prüfen (FUNDING.yml und Spendenbereich entfernt)
-- [ ] Kategorien ausblenden
+- [x] Kategorien ausblenden (aus IPVIO Stream 1.4.2 portiert, inkl. Sortieren und „Neu hinzugefügt“ ausblenden)
 
 ## 5. Bauen und Testen
 
 - Bauen: `bash ./gradlew assembleDebug` (gradlew ist auf diesem Mac nicht ausführbar)
 - Tests: `bash ./gradlew test`
 - Bekannt: PhoneImportTest schlägt schon ohne Änderungen fehl.
+- Bekannt: PhoneTransferTest schlägt manchmal fehl (SocketException beim lokalen Upload-Test), auch ohne Änderungen.

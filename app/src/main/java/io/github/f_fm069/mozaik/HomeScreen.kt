@@ -90,6 +90,23 @@ private fun providerGroups(list: List<Item>): Map<String, List<Item>> {
 }
 
 /**
+ * Wendet die eigene Kategorien-Reihenfolge ([CatOrder]) und ausgeblendete Kategorien ([IgnoredGroups]) auf die
+ * Anbieter-Kategorien an, damit die Startseitenreihen zur Kategorienseite passen. Auto-Genres ([g] ist nicht
+ * [provider]) bleiben, wie sie sind. Übernommen aus IPVIO Stream (GPL-3.0).
+ */
+private fun orderedGroups(g: Map<String, List<Item>>, provider: Map<String, List<Item>>, area: String, kind: Kind): Map<String, List<Item>> {
+    if (g !== provider) return g
+    val names = g.keys.filter { !IgnoredGroups.has(IgnoredGroups.groupKey(kind, it)) }
+    return CatOrder.sorted(area, names).associateWith { g.getValue(it) }
+}
+
+/** Filme oder Serien aus [all] in Anbieter-Kategorien, genauso wie auf der Startseite (Filme ohne doppelte Fassungen). */
+internal fun providerMap(all: List<Item>, kind: Kind): Map<String, List<Item>> {
+    val l = all.filter { it.kind == kind }
+    return providerGroups(if (kind == Kind.MOVIE) PlaylistLogic.firstPerKey(l) { it.mk + "|" + it.lang } else l)
+}
+
+/**
  * Alles, was die Startseite aus der Playlist ableitet. Wird im Hintergrund-Thread berechnet (bei 100.000+ Titeln
  * dauert das spürbar), die Oberfläche zeigt solange den vorherigen Stand bzw. das Lade-Skelett.
  */
@@ -184,8 +201,13 @@ fun HomeScreen(
     val movieP = data.movieP
     val seriesP = data.seriesP
     val liveP = data.liveP
-    val movieG = data.movieG
-    val seriesG = data.seriesG
+    // Anbieter-Kategorien folgen Reihenfolge und Ausblenden der Kategorienseite. Neu sortiert wird nur, wenn sich
+    // CatOrder oder IgnoredGroups ändern (günstig, nicht bei jedem Neuzeichnen); Auto-Genres behalten ihre Reihenfolge.
+    CatOrder.init(ctx)
+    val catVer = CatOrder.version
+    val ignVer = IgnoredGroups.version
+    val movieG = remember(data.movieG, data.movieP, catVer, ignVer) { orderedGroups(data.movieG, data.movieP, CatOrder.MOVIE, Kind.MOVIE) }
+    val seriesG = remember(data.seriesG, data.seriesP, catVer, ignVer) { orderedGroups(data.seriesG, data.seriesP, CatOrder.SERIES, Kind.SERIES) }
     val topM = data.topM
     val topS = data.topS
     val byId = data.byId
@@ -233,13 +255,15 @@ fun HomeScreen(
     val openCats: () -> Unit = {
         scope.launch {
             val g = if (data.genresOk) withContext(Dispatchers.Default) { ipvioGroups(vodBase) } else emptyMap()
-            onCategories(CatReq("$vodNoun · Kategorien", g, if (tab == 1) movieP else seriesP, SORT_NEW))
+            onCategories(CatReq("$vodNoun · Kategorien", g, if (tab == 1) movieP else seriesP, SORT_NEW, kind = if (tab == 1) Kind.MOVIE else Kind.SERIES))
         }
     }
     val navTabs = if (!isVod) emptyList() else listOf(
         HeaderTab("Kategorien", AIcon.Categories, "tb:cats$tab") { openCats() },
-        HeaderTab("Top bewertet", AIcon.Star, "tb:top$tab") { onBrowse(BrowseReq("Top bewertet · $vodNoun", vodTop, SORT_RATING)) },
-        HeaderTab("Neu hinzugefügt", AIcon.Sparkle, "tb:new$tab") { onBrowse(BrowseReq("Neu hinzugefügt · $vodNoun", vodBase, SORT_NEW)) },
+        HeaderTab("Top bewertet", AIcon.Star, "tb:top$tab") { onBrowse(BrowseReq("Top bewertet · $vodNoun", vodTop, SORT_RATING)) }
+    ) + (if (General.showNew) listOf(
+        HeaderTab("Neu hinzugefügt", AIcon.Sparkle, "tb:new$tab") { onBrowse(BrowseReq("Neu hinzugefügt · $vodNoun", vodBase, SORT_NEW)) }
+    ) else emptyList()) + listOf(
         HeaderTab("Alle $vodNoun", AIcon.Grid, "tb:all$tab") { onBrowse(BrowseReq("Alle $vodNoun", vodBase, SORT_NEW)) }
     )
     var inHeader by remember { mutableStateOf(false) }
@@ -470,13 +494,13 @@ fun HomeScreen(
                             }
                             val wl = watchList.filter { it.kind != Kind.LIVE }
                             if (wl.isNotEmpty()) item(key = "wl") { ItemsRow("Meine Liste", wl, cardW, onOpen) { onTab(MenuLogic.MYLIST) } }
-                            if (movies.isNotEmpty()) item(key = "newm") {
+                            if (General.showNew && movies.isNotEmpty()) item(key = "newm") {
                                 ItemsRow("Neu hinzugefügt · Filme", movies.takeLast(40).reversed(), cardW, onOpen) { onBrowse(BrowseReq("Neu hinzugefügt · Filme", movies, SORT_NEW)) }
                             }
                             if (topM.size >= 8) item(key = "topm") {
                                 ItemsRow("Top bewertet · Filme", topM, cardW, onOpen) { onBrowse(BrowseReq("Top bewertet · Filme", topM, SORT_RATING)) }
                             }
-                            if (series.isNotEmpty()) item(key = "news") {
+                            if (General.showNew && series.isNotEmpty()) item(key = "news") {
                                 ItemsRow("Neu hinzugefügt · Serien", series.takeLast(40).reversed(), cardW, onOpen) { onBrowse(BrowseReq("Neu hinzugefügt · Serien", series, SORT_NEW)) }
                             }
                             if (topS.size >= 8) item(key = "tops") {
@@ -517,7 +541,7 @@ fun HomeScreen(
                             val recent = hist.filter { it.kind == kind }
                             if (recent.isNotEmpty()) item(key = "hr$tab") { ItemsRow("Zuletzt geschaut", recent, cardW, onOpen) { onBrowse(BrowseReq("Zuletzt geschaut · $noun", recent, SORT_PLAYLIST)) } }
                             if (base.isEmpty()) item { EmptyHint("Keine $noun in dieser Playlist") }
-                            if (base.isNotEmpty()) item(key = "new$tab") { ItemsRow("Neu hinzugefügt", base.takeLast(40).reversed(), cardW, onOpen) { onBrowse(BrowseReq("Neu hinzugefügt · $noun", base, SORT_NEW)) } }
+                            if (General.showNew && base.isNotEmpty()) item(key = "new$tab") { ItemsRow("Neu hinzugefügt", base.takeLast(40).reversed(), cardW, onOpen) { onBrowse(BrowseReq("Neu hinzugefügt · $noun", base, SORT_NEW)) } }
                             if (top.size >= 8) item(key = "best$tab") { ItemsRow("Top bewertet", top, cardW, onOpen) { onBrowse(BrowseReq("Top bewertet · $noun", top, SORT_RATING)) } }
                             groups.entries.take(12).forEach { (g, l) -> item(key = "G$tab$g") { ItemsRow(g, l, cardW, onOpen) { onBrowse(BrowseReq(g, l, SORT_NEW)) } } }
                             if (groups.size > 12) item { EmptyHint("Weitere Kategorien findest du unter „Kategorien“ oben.") }

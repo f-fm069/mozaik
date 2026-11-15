@@ -15,7 +15,9 @@ object Backup {
         "ipvio_catfavs", "ipvio_variants", "ipvio_guide", "ipvio_browse", "ipvio_cat", "ipvio_lang",
         "ipvio_chlists", "ipvio_tracks", "ipvio_eprog",
         // Runde 20: Live-Puffer/Aufnahmen, Seitenleiste, Handy, Updates
-        "ipvio_livetv", "ipvio_side", "ipvio_mobile", "ipvio_upd"
+        "ipvio_livetv", "ipvio_side", "ipvio_mobile", "ipvio_upd",
+        // Kategorien ausblenden, ignorieren und sortieren
+        "ipvio_hidecats", "ipvio_ignored", "ipvio_catorder"
     )
 
     /** Größer wird eine echte Sicherung nie; größere Dateien werden gar nicht erst gelesen. */

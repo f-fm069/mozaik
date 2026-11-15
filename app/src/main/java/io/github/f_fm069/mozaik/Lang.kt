@@ -22,8 +22,8 @@ object Lang {
     private fun ensureLoaded() {
         if (loaded) return
         loaded = true
-        I18nCore.load(DictA, DictB, DictC, DictD, DictE, DictF, DictG, DictH, DictI, DictJ)
-        I18nCore.loadColumn(I18nCore.CODES.indexOf("nl"), DictNl1, DictNl2, DictNl3, DictNl4, DictNl5)
+        I18nCore.load(DictA, DictB, DictC, DictD, DictE, DictF, DictG, DictH, DictI, DictJ, DictK)
+        I18nCore.loadColumn(I18nCore.CODES.indexOf("nl"), DictNl1, DictNl2, DictNl3, DictNl4, DictNl5, DictNl6)
     }
 
     /** Index in I18nCore.CODES. Liest den Zustand, damit Texte beim Umstellen neu gezeichnet werden. */

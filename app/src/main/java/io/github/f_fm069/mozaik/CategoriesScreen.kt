@@ -44,8 +44,17 @@ data class CatReq(
     val provider: Map<String, List<Item>>,
     val sort: Int,
     val recent: List<Item> = emptyList(),
-    val watch: List<Item> = emptyList()
+    val watch: List<Item> = emptyList(),
+    /** [Kind.MOVIE] oder [Kind.SERIES]: Anbieter-Kategorien lassen sich dann sortieren, verschieben und ausblenden. */
+    val kind: Kind? = null
 )
+
+/** Bereich für [CatOrder] zu einer Art (Filme, Serien), sonst null. */
+private fun areaOf(kind: Kind?): String? = when (kind) {
+    Kind.MOVIE -> CatOrder.MOVIE
+    Kind.SERIES -> CatOrder.SERIES
+    else -> null
+}
 
 const val CAT_RECENT = "Zuletzt geschaut"
 const val CAT_WATCH = "Meine Liste"
@@ -90,14 +99,39 @@ fun CategoriesScreen(
     BackHandler(enabled = !inPills) { runCatching { pillFocus.requestFocus() } }
     BackHandler(enabled = inPills) { onBack() }
 
-    val map = if (mode == 0) req.ipvio else req.provider
-    val entries = remember(map, az, req.recent, req.watch) {
+    // Anbieter-Kategorien (nicht Auto-Genres) folgen der gespeicherten Sortierung und lassen sich ausblenden.
+    // Sie werden aus der aktuellen Liste gebildet, damit Aus- und Einblenden sofort sichtbar ist.
+    val area = if (mode == 1) areaOf(req.kind) else null
+    val provider = if (area != null && req.kind != null) {
+        val chans = PlaylistStore.channels
+        remember(chans, req.kind) { providerMap(chans, req.kind) }
+    } else req.provider
+    val map = if (mode == 0) req.ipvio else provider
+    if (area != null) CatOrder.init(ctx)
+    IgnoredGroups.init(ctx)
+    val hidden = if (area != null && req.kind != null) IgnoredGroups.hiddenGroups(req.kind) else emptyList()
+    val entries = remember(map, az, area, CatOrder.version, hidden, req.recent, req.watch) {
         val l = map.entries.map { it.key to it.value }
-        val base = if (az) l.sortedBy { it.first.lowercase() } else l
+        val base = when {
+            area != null -> CatOrder.sorted(area, map.keys.toList()).mapNotNull { k -> map[k]?.let { k to it } }
+            az -> l.sortedBy { it.first.lowercase() }
+            else -> l
+        }
         val top = ArrayList<Pair<String, List<Item>>>()
         if (req.recent.isNotEmpty()) top.add(CAT_RECENT to req.recent)
         if (req.watch.isNotEmpty()) top.add(CAT_WATCH to req.watch)
-        top + base
+        top + base + (if (hidden.isNotEmpty()) listOf(HIDDEN_CAT to emptyList<Item>()) else emptyList())
+    }
+    // Menü einer Kategorie (langes OK / Menütaste), Liste der ausgeblendeten Kategorien, Sortierung
+    var menuFor by remember { mutableStateOf<String?>(null) }
+    var hidMenu by remember { mutableStateOf(false) }
+    var sortMenu by remember { mutableStateOf(false) }
+    fun onMenu(name: String) {
+        if (area == null || req.kind == null || isTopEntry(name)) return
+        if (name == HIDDEN_CAT) hidMenu = true else menuFor = name
+    }
+    fun pick(name: String, items: List<Item>, sort: Int) {
+        if (name == HIDDEN_CAT) hidMenu = true else onPick(name, items, sortFor(name, sort))
     }
     val restoring = remember { CatMemory.restore[req.title] == true }
     var bgItem by remember { mutableStateOf<Item?>(null) }
@@ -122,8 +156,13 @@ fun CategoriesScreen(
                         mode = if (it == 1) 0 else 1
                         AppSettings.set(ctx, mode == 0)
                     }
-                    val sorts = listOf("Standard", "A–Z")
-                    DropdownPill("Sortierung", sorts[if (az) 1 else 0], sorts, if (az) 1 else 0, icon = FIcon.Sort) { az = it == 1 }
+                    if (area != null) {
+                        val si = CatOrder.mode(area).coerceIn(0, 2)
+                        DropdownPill("Sortierung", SORT_MODES[si], SORT_MODES, si, icon = FIcon.Sort) { CatOrder.setMode(ctx, area, it) }
+                    } else {
+                        val sorts = listOf("Standard", "A–Z")
+                        DropdownPill("Sortierung", sorts[if (az) 1 else 0], sorts, if (az) 1 else 0, icon = FIcon.Sort) { az = it == 1 }
+                    }
                     val views = listOf("Liste", "Kacheln")
                     DropdownPill("Ansicht", views[if (CatPrefs.listView) 0 else 1], views, if (CatPrefs.listView) 0 else 1, icon = FIcon.View) { CatPrefs.set(ctx, it == 0) }
                     if (CatPrefs.listView) {
@@ -132,7 +171,7 @@ fun CategoriesScreen(
                         val pi = pr.indexOf(General.perRow).let { if (it < 0) 0 else it }
                         DropdownPill("Spalten", prl[pi], prl, pi, icon = FIcon.View) { General.setPerRow(ctx, pr[it]) }
                     }
-                    Text("${entries.size} Kategorien", color = Muted, fontSize = 14.sp)
+                    Text("${entries.count { it.first != HIDDEN_CAT }} Kategorien", color = Muted, fontSize = 14.sp)
                 }
             }
             Spacer(Modifier.height(12.dp))
@@ -141,8 +180,35 @@ fun CategoriesScreen(
                 if (mode == 0 && Classifier.running) Text("Genres werden gerade im Hintergrund erkannt. Die Kategorien erscheinen nach und nach.", color = Muted, fontSize = 14.sp, modifier = Modifier.padding(bottom = 8.dp))
                 // Auto-Genres: Titel gleich nach Bewertung sortiert (beste zuerst); Kategorien des Anbieters behalten ihre Sortierung
                 val catSort = if (mode == 0) 2 else req.sort
-                if (CatPrefs.listView) ListMode(req.title, entries, catSort, firstFocus, pillFocus, onPick, onOpen) { bgItem = it }
-                else TileMode(entries, catSort, firstFocus, onPick)
+                if (CatPrefs.listView) ListMode(req.title, entries, catSort, hidden.size, firstFocus, pillFocus, ::pick, ::onMenu, onOpen) { bgItem = it }
+                else TileMode(entries, catSort, hidden.size, firstFocus, ::pick, ::onMenu)
+            }
+        }
+        val kind = req.kind
+        if (area != null && kind != null) {
+            val cur = menuFor
+            if (cur != null) OptionPopup(
+                listOf("Kategorie ausblenden", "Nach oben verschieben", "Nach unten verschieben", "An den Anfang verschieben", "Kategorien sortieren …"),
+                -1, { menuFor = null }
+            ) { i ->
+                menuFor = null
+                val all = provider.keys.toList()
+                when (i) {
+                    0 -> IgnoredGroups.set(ctx, IgnoredGroups.groupKey(kind, cur), true)
+                    1 -> CatOrder.move(ctx, area, all, cur, -1)
+                    2 -> CatOrder.move(ctx, area, all, cur, 1)
+                    3 -> CatOrder.toTop(ctx, area, all, cur)
+                    else -> sortMenu = true
+                }
+            }
+            if (hidMenu) OptionPopup(listOf("Alle wieder einblenden") + hidden, -1, { hidMenu = false }) { i ->
+                hidMenu = false
+                if (i == 0) IgnoredGroups.setMany(ctx, hidden.map { IgnoredGroups.groupKey(kind, it) }, false)
+                else IgnoredGroups.set(ctx, IgnoredGroups.groupKey(kind, hidden[i - 1]), false)
+            }
+            if (sortMenu) OptionPopup(SORT_MODES, CatOrder.mode(area), { sortMenu = false }) { i ->
+                sortMenu = false
+                CatOrder.setMode(ctx, area, i)
             }
         }
         Sidebar(tab, onGoTab, Modifier.align(SidebarPrefs.align()), sideFocus) { inSidebar = it }
@@ -163,8 +229,8 @@ object CatMemory {
 
 @Composable
 private fun ListMode(
-    title: String, entries: List<Pair<String, List<Item>>>, sort: Int, firstFocus: FocusRequester, pillFocus: FocusRequester,
-    onPick: (String, List<Item>, Int) -> Unit, onOpen: (Item) -> Unit, onFocusItem: (Item) -> Unit
+    title: String, entries: List<Pair<String, List<Item>>>, sort: Int, hiddenCount: Int, firstFocus: FocusRequester, pillFocus: FocusRequester,
+    onPick: (String, List<Item>, Int) -> Unit, onMenu: (String) -> Unit, onOpen: (Item) -> Unit, onFocusItem: (Item) -> Unit
 ) {
     val scope = rememberCoroutineScope()
     var sel by remember { mutableIntStateOf((CatMemory.sel[title] ?: 0).coerceIn(0, maxOf(entries.lastIndex, 0))) }
@@ -218,10 +284,11 @@ private fun ListMode(
     Row(Modifier.fillMaxSize()) {
         LazyColumn(Modifier.width(250.dp).fillMaxHeight(), state = catState, verticalArrangement = Arrangement.spacedBy(3.dp)) {
             itemsIndexed(entries) { i, e ->
+                val isHidden = e.first == HIDDEN_CAT
                 CatListRow(
-                    e.first, e.second.size, i == sel,
+                    if (isHidden) Lang.tr("Ausgeblendet") else e.first, if (isHidden) hiddenCount else e.second.size, i == sel,
                     if (i == sel) Modifier.focusRequester(firstFocus) else Modifier,
-                    onFocus = { sel = i }, onRight = { focusPreview() }
+                    onFocus = { sel = i }, onRight = { if (!isHidden) focusPreview() }, onMenu = { onMenu(e.first) }, muted = isHidden
                 ) { onPick(e.first, e.second, sortFor(e.first, sort)) }
             }
         }
@@ -267,7 +334,7 @@ private fun ListMode(
 @Composable
 private fun CatListRow(
     name: String, count: Int, selected: Boolean, modifier: Modifier,
-    onFocus: () -> Unit, onRight: () -> Unit, onClick: () -> Unit
+    onFocus: () -> Unit, onRight: () -> Unit, onMenu: () -> Unit, muted: Boolean = false, onClick: () -> Unit
 ) {
     var f by remember { mutableStateOf(false) }
     val shape = RoundedCornerShape(DS.RadiusS)
@@ -279,18 +346,22 @@ private fun CatListRow(
             .onPreviewKeyEvent { k ->
                 if (k.type == KeyEventType.KeyDown && k.key == Key.DirectionRight && k.nativeKeyEvent.repeatCount == 0) { onRight(); true } else false
             }
+            .menuKeys(onMenu = onMenu, onLong = onMenu)
             .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 10.dp),
         horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(name, color = if (isTopEntry(name)) Accent2 else Color.White, fontSize = 14.sp, fontWeight = if (selected || isTopEntry(name)) FontWeight.Bold else FontWeight.Normal,
+        Text(name, color = if (isTopEntry(name)) Accent2 else if (muted) Muted else Color.White, fontSize = 14.sp, fontWeight = if (selected || isTopEntry(name)) FontWeight.Bold else FontWeight.Normal,
             maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
         Text("$count", color = Muted, fontSize = 13.sp)
     }
 }
 
 @Composable
-private fun TileMode(entries: List<Pair<String, List<Item>>>, sort: Int, firstFocus: FocusRequester, onPick: (String, List<Item>, Int) -> Unit) {
+private fun TileMode(
+    entries: List<Pair<String, List<Item>>>, sort: Int, hiddenCount: Int, firstFocus: FocusRequester,
+    onPick: (String, List<Item>, Int) -> Unit, onMenu: (String) -> Unit
+) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(3),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -299,7 +370,12 @@ private fun TileMode(entries: List<Pair<String, List<Item>>>, sort: Int, firstFo
         modifier = Modifier.fillMaxSize()
     ) {
         itemsIndexed(entries) { i, e ->
-            CatTile(e.first, e.second, if (i == 0) Modifier.focusRequester(firstFocus) else Modifier) { onPick(e.first, e.second, sortFor(e.first, sort)) }
+            val isHidden = e.first == HIDDEN_CAT
+            CatTile(
+                if (isHidden) Lang.tr("Ausgeblendet") else e.first, e.second,
+                (if (i == 0) Modifier.focusRequester(firstFocus) else Modifier).menuKeys(onMenu = { onMenu(e.first) }, onLong = { onMenu(e.first) }),
+                countText = if (isHidden) "$hiddenCount" else null
+            ) { onPick(e.first, e.second, sortFor(e.first, sort)) }
         }
     }
 }
@@ -309,7 +385,7 @@ private fun TileMode(entries: List<Pair<String, List<Item>>>, sort: Int, firstFo
  * links Name und Anzahl. Ohne Bilder bleibt ein ruhiger Farbverlauf in der Akzentfarbe.
  */
 @Composable
-private fun CatTile(name: String, items: List<Item>, modifier: Modifier, onClick: () -> Unit) {
+private fun CatTile(name: String, items: List<Item>, modifier: Modifier, countText: String? = null, onClick: () -> Unit) {
     var f by remember { mutableStateOf(false) }
     val s by animateFloatAsState(if (f) focusScale(1.04f) else 1f, label = "tile")
     val shape = RoundedCornerShape(DS.RadiusL)
@@ -332,7 +408,7 @@ private fun CatTile(name: String, items: List<Item>, modifier: Modifier, onClick
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Text(name, color = if (isTopEntry(name)) Accent2 else Color.White, fontSize = 20.sp, fontWeight = FontWeight.ExtraBold, maxLines = 2, overflow = TextOverflow.Ellipsis)
-            Text("${items.size} Titel", color = Muted, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+            Text(countText ?: "${items.size} Titel", color = Muted, fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
         }
         if (posters.isNotEmpty()) {
             Box(Modifier.align(Alignment.CenterEnd).padding(end = 16.dp).width(118.dp).height(100.dp)) {

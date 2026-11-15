@@ -1,6 +1,6 @@
 # Mozaik
 
-<p align="center"><img src="docs/logo-horizontal-dark.png" alt="Mozaik – IPTV Player" width="480"></p>
+<p align="center"><img src="docs/branding/mozaik-logo.png" alt="Mozaik" width="200"></p>
 
 > **Mozaik is a fork of [IPVIO Stream](https://github.com/Emrodev/IPVIO-Stream) by Emrodev** and is developed further independently. Like the original, it is licensed under the GPL-3.0. Mozaik is not affiliated with the original project.
 
@@ -67,7 +67,7 @@ Allow "Install unknown apps" for Downloader (or your file manager) when asked, t
 - In-app updates from GitHub Releases
 
 **Look and feel**
-- Green on navy plus 12 colour themes, 5 backgrounds, custom colours
+- Indigo (#6D6BFF) on black plus 11 more colour themes, 5 backgrounds, custom colours
 - Fonts Outfit, Inter or system; adjustable text and display size; animations off/subtle/normal
 - Sidebar left, right or top, icons only or with text; phones: landscape, tap and double-tap controls
 - 10 languages: German, English, Turkish, Bosnian, Croatian, Serbian, Spanish, French, Italian, Dutch
@@ -78,7 +78,7 @@ Allow "Install unknown apps" for Downloader (or your file manager) when asked, t
 |---|---|
 | ![Mozaik - TV guide](docs/screenshots/programmfuehrer.png)<br>**TV guide** – timeline with programme details | ![Mozaik - Player](docs/screenshots/player.png)<br>**Player** – controls with channel and current show |
 | ![Mozaik - Film details](docs/screenshots/film-details.png)<br>**Film details** – description, rating and artwork from TMDB | ![Mozaik - Categories](docs/screenshots/kategorien.png)<br>**Categories** – automatic genres with posters |
-| ![Mozaik - Series details](docs/screenshots/serie-details.png)<br>**Series details** – seasons and episodes | ![Mozaik - Settings](docs/screenshots/einstellungen.png)<br>**Settings** – grouped, remote-friendly |
+| ![Mozaik - Series details](docs/screenshots/serie-details.png)<br>**Series details** – seasons and episodes | ![Mozaik - Settings](docs/screenshots/einstellungen.png)<br>**Settings** – one tile grid, remote-friendly |
 | ![Mozaik - Design](docs/screenshots/einstellungen-design.png)<br>**Design** – colour themes with live preview | ![Mozaik - About](docs/screenshots/ueber-mozaik.png)<br>**About** – licences and TMDB attribution |
 
 <sub>The screenshots use a test playlist: the series, channel names, logos and programme data are invented; the films are free Blender open movies.</sub>
@@ -150,6 +150,10 @@ Copyright (C) 2026 Mozaik contributors
 IPVIO Stream is free software: you can redistribute it and/or modify it under the terms of the **GNU General Public License version 3** (see [LICENSE](LICENSE)). The GPL is required because the app includes the GPL-3.0 licensed FFmpeg audio decoder. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for the libraries, fonts and services used.
 
 The name "IPVIO" and the IPVIO logo identify the original project. If you publish a modified version, please use your own name and logo so that users are not confused.
+
+Logo design: Pixeria.
+
+The Mozaik name and logo are not covered by the GPL-3.0 license of the source code. Forks and modified versions should use their own name and logo.
 
 ## Disclaimer
 

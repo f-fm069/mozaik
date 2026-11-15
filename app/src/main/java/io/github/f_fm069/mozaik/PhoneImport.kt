@@ -59,11 +59,15 @@ object PhoneImportLogic {
     /** Was die Seite zusätzlich anbietet (Runde 20). */
     class Features(val upload: Boolean = false, val transfer: Boolean = false, val crash: Boolean = false)
 
-    private const val CSS = """body{font-family:system-ui,sans-serif;background:#0B0F19;color:#fff;margin:0;padding:20px;max-width:560px}
-h1{font-size:22px}h2{font-size:16px;color:#9aa;margin-top:28px}a{color:#FFB45C}pre{white-space:pre-wrap;background:#171a26;padding:12px;border-radius:10px;font-size:13px}
+    /** Firmenfarben für die Handy-Seite (Fläche mit weißer Schrift, Hervorhebung für Links), aus Look abgeleitet. */
+    private val FILL = ThemeMath.hexOf(Look.BRAND_ACCENT)
+    private val HI = ThemeMath.hexOf(Look.BRAND_ACCENT_HI)
+
+    private val CSS = """body{font-family:system-ui,sans-serif;background:#0B0F19;color:#fff;margin:0;padding:20px;max-width:560px}
+h1{font-size:22px}h2{font-size:16px;color:#9aa;margin-top:28px}a{color:${HI}}pre{white-space:pre-wrap;background:#171a26;padding:12px;border-radius:10px;font-size:13px}
 input,textarea{width:100%;box-sizing:border-box;padding:14px;margin:6px 0;border-radius:10px;border:1px solid #333;background:#171a26;color:#fff;font-size:16px}
 input[type=checkbox]{width:auto}label{display:block;margin:8px 0}
-button{width:100%;padding:14px;margin-top:10px;border:0;border-radius:10px;background:#FF8A1F;color:#07080B;font-size:17px;font-weight:700}"""
+button{width:100%;padding:14px;margin-top:10px;border:0;border-radius:10px;background:${FILL};color:#fff;font-size:17px;font-weight:700}"""
 
     /** Kleines Skript: Datei als Body senden und die Antwort zeigen. */
     private fun sendFileJs(fn: String, path: String, codeId: String, fileId: String, statusId: String): String =
@@ -80,7 +84,7 @@ document.getElementById('$statusId').textContent='…';fetch('$path?code='+encod
 body{font-family:system-ui,sans-serif;background:#0B0F19;color:#fff;margin:0;padding:20px;max-width:560px}
 h1{font-size:22px}h2{font-size:16px;color:#9aa;margin-top:28px}
 input,textarea{width:100%;box-sizing:border-box;padding:14px;margin:6px 0;border-radius:10px;border:1px solid #333;background:#171a26;color:#fff;font-size:16px}
-button{width:100%;padding:14px;margin-top:10px;border:0;border-radius:10px;background:#FF8A1F;color:#07080B;font-size:17px;font-weight:700}
+button{width:100%;padding:14px;margin-top:10px;border:0;border-radius:10px;background:${FILL};color:#fff;font-size:17px;font-weight:700}
 </style></head><body><h1>Mozaik</h1>
 <p>${t("Sende deine Playlist an den Fernseher. Den Code siehst du auf dem Bildschirm.", "Send your playlist to the TV. You can see the code on the screen.")}</p>
 <form method="post" action="/send"><h2>${t("M3U-Link", "M3U link")}</h2>

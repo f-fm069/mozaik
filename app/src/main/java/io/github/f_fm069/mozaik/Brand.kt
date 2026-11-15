@@ -7,7 +7,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.runtime.Composable
 
 /**
- * Das Mozaik-Zeichen (Play-Symbol mit Farbverlauf) als Bild: res/drawable/ic_brand_mark.png.
+ * Das Mozaik-Zeichen (abgerundetes Zweiformen-Symbol mit „M“, nur Symbol) als Bild: res/drawable/ic_brand_mark.png.
  * Der Schriftzug "Mozaik" wird daneben als weißer Text gesetzt.
  */
 @Composable

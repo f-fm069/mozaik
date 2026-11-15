@@ -692,7 +692,7 @@ private fun EpisodeRow(ep: Episode, em: EpMeta?, v: Variant, prog: ResumeLogic.E
             .graphicsLayer { scaleX = sc; scaleY = sc; transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0f, 0.5f) }
             .then(if (f) Modifier.shadow(dpx(24), shape, ambientColor = Tok.Lift, spotColor = Tok.Lift) else Modifier)
             .clip(shape).background(if (f) Color(0x1FFFFFFF) else Color(0x08FFFFFF))
-            .border(1.dp, if (f) Color(0x33FFFFFF) else Color.Transparent, shape)
+            .border(DS.Border, if (f) Accent2 else Color.Transparent, shape)
             .onFocusChanged { f = it.isFocused; if (it.isFocused) onFocus() }
             .clickable(onClick = onClick)
             .padding(dpx(14)),

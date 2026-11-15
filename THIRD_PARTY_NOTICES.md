@@ -55,7 +55,7 @@ The font files in `app/src/main/res/font/` are subsets/copies of the original fo
 
 | Item | Source / License |
 |---|---|
-| Mozaik logo and app icon (`res/drawable`, `res/mipmap-*`, `docs/logo-horizontal-dark.png`) | Created for Mozaik, GPL-3.0 like the rest of the project |
+| Mozaik logo, app icon and TV banner (`res/drawable*`, `res/mipmap-*`, `docs/branding/`) | Logo design: Pixeria. The Mozaik name and logo are not covered by the GPL-3.0 license of the source code. Forks and modified versions should use their own name and logo. |
 | In-app symbols (`AppIcons.kt`) | Drawn in code, from IPVIO Stream (GPL-3.0) |
 | TMDB logo (`res/drawable/tmdb_logo.xml`, `docs/tmdb-logo.svg`) | Official TMDB logo, used for attribution as required by the TMDB API terms of use. Trademark of TMDB, not covered by the GPL. |
 

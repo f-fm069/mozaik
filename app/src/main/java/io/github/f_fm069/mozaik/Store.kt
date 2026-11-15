@@ -177,6 +177,15 @@ object AppSettings {
             val bg = p.getInt("look_bg", 0)
             e.putInt("look_accent", newAcc).putInt("look_bg", if (bg >= 5) Look.DEFAULT_BG else bg).remove("look_custom_was").commit()
         }
+        if (p.getInt("look_ver", 1) < 7) {
+            // Einmalig: Firmenfarbe Orange → Indigo. Wer das alte Orange als eigene Farbe gespeichert hatte, bekommt Indigo;
+            // eine eigene Farbe 2 im alten Orange-Ton wird wieder „automatisch“. Das Thema „Orange“ bleibt wählbar.
+            val e = p.edit().putInt("look_ver", 7)
+            if ((p.getInt("look_custom", Look.BRAND_ACCENT) and 0xFFFFFF) == Look.OLD_BRAND_ACCENT) e.putInt("look_custom", Look.BRAND_ACCENT)
+            val c2 = p.getInt("look_custom2", -1)
+            if (c2 >= 0 && (c2 and 0xFFFFFF) == Look.OLD_BRAND_ACCENT_HI) e.putInt("look_custom2", -1)
+            e.commit()
+        }
         Look.accentIdx = p.getInt("look_accent", Look.DEFAULT_ACCENT).coerceIn(0, Look.ACCENTS.size)
         Look.custom = p.getInt("look_custom", Look.BRAND_ACCENT) and 0xFFFFFF
         Look.custom2 = p.getInt("look_custom2", -1).let { if (it < 0) -1 else it and 0xFFFFFF }
@@ -193,7 +202,7 @@ object AppSettings {
         Look.bgIdx = bg.coerceIn(0, Look.BGS.lastIndex)
         Look.motion = motion.coerceIn(0, 2)
         Look.uiScale = scale.coerceIn(0, Look.SCALES.lastIndex)
-        prefs(c).edit().putInt("look_accent", Look.accentIdx).putInt("look_custom", Look.custom).putInt("look_custom2", Look.custom2).putInt("look_bg", Look.bgIdx).putInt("look_ver", 6)
+        prefs(c).edit().putInt("look_accent", Look.accentIdx).putInt("look_custom", Look.custom).putInt("look_custom2", Look.custom2).putInt("look_bg", Look.bgIdx).putInt("look_ver", 7)
             .putInt("look_motion", Look.motion).putInt("look_scale", Look.uiScale).apply()
     }
 

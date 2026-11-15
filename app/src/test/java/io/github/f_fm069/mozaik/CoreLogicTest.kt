@@ -95,22 +95,29 @@ http://h/x
         // Standard-Hintergrund ist OLED-Schwarz an Stelle 2; die Reihenfolge darf sich nicht ändern (gespeicherte Nummern)
         assertEquals(2, Look.DEFAULT_BG)
         assertEquals(0x000000, Look.BGS[Look.DEFAULT_BG].bg)
-        // Das Standard-Orange bekommt dunkle Schrift (#07080B), dunkle Flächen weiterhin weiße
-        assertEquals(ThemeMath.INK, ThemeMath.onAccent(Look.BRAND_ACCENT))
+        // Indigo-Fläche bekommt weiße Schrift (mindestens 4,5:1)
+        assertEquals(0xFFFFFF, ThemeMath.onAccent(Look.BRAND_ACCENT))
         assertEquals(0xFFFFFF, ThemeMath.onAccent(0x7C5CFF))
-        assertTrue(ThemeMath.contrast(ThemeMath.onAccent(Look.BRAND_ACCENT), Look.BRAND_ACCENT) >= 4.5)
-        assertTrue(ThemeMath.contrast(Look.BRAND_ACCENT, 0x0B0F19) >= 4.5)   // Orange als Schrift auf Navy
+        assertTrue(ThemeMath.contrast(0xFFFFFF, Look.BRAND_ACCENT) >= 4.5)
         for (rgb in Look.SWATCHES) assertTrue(ThemeMath.hexOf(rgb), ThemeMath.contrast(ThemeMath.onAccent(rgb), rgb) >= 3.0)
     }
 
-    @Test fun farben_orangeAufAllenHintergruenden() {
-        // Orange und Hervorhebung als Schrift auf jedem Hintergrund und jeder Fläche mindestens 4,5:1
+    @Test fun farben_indigoAusEinerGrundfarbe() {
+        // Grundfarbe ist Indigo #6D6BFF; Fläche und Hervorhebung sind daraus abgeleitet (gleicher Farbton)
+        assertEquals(0x6D6BFF, Look.BRAND_BASE)
+        val hBase = ThemeMath.rgbToHsv(Look.BRAND_BASE)[0]
+        assertEquals(hBase, ThemeMath.rgbToHsv(Look.BRAND_ACCENT)[0], 2f)
+        assertEquals(hBase, ThemeMath.rgbToHsv(Look.BRAND_ACCENT_HI)[0], 2f)
+        // Weiß auf der Grundfarbe selbst reicht nicht (4,25:1), deshalb ist die Fläche etwas dunkler
+        assertTrue(ThemeMath.contrast(0xFFFFFF, Look.BRAND_BASE) < 4.5)
+        assertTrue(ThemeMath.luminance(Look.BRAND_ACCENT) < ThemeMath.luminance(Look.BRAND_BASE))
+        // Hervorhebung als Schrift, Symbol und Fokus-Rahmen auf jedem Hintergrund und jeder Fläche mindestens 4,5:1
         for (b in Look.BGS) for (grund in listOf(b.bg, b.surf, b.surf2)) {
-            assertTrue("Orange auf ${b.name}", ThemeMath.contrast(Look.BRAND_ACCENT, grund) >= 4.5)
             assertTrue("Hervorhebung auf ${b.name}", ThemeMath.contrast(Look.BRAND_ACCENT_HI, grund) >= 4.5)
         }
-        // Weiß auf Orange reicht nicht, deshalb dunkle Schrift
-        assertTrue(ThemeMath.contrast(0xFFFFFF, Look.BRAND_ACCENT) < 4.5)
+        println("Indigo: Fläche " + ThemeMath.hexOf(Look.BRAND_ACCENT) + " (Weiß %.2f)".format(ThemeMath.contrast(0xFFFFFF, Look.BRAND_ACCENT)) +
+            ", Hervorhebung " + ThemeMath.hexOf(Look.BRAND_ACCENT_HI) +
+            Look.BGS.joinToString { b -> " ${b.name} %.2f/%.2f".format(ThemeMath.contrast(Look.BRAND_ACCENT_HI, b.bg), ThemeMath.contrast(Look.BRAND_ACCENT_HI, b.surf2)) })
         assertEquals(0x07080B, ThemeMath.INK)
     }
 

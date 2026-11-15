@@ -6,14 +6,15 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
-/** Einstellungs-Startseite: feste Seitennummern, Gruppen und Pfeiltasten. */
+/** Einstellungs-Startseite: eine Liste in 3 Spalten wie im Original, feste Seitennummern, Farben und Pfeiltasten. */
 class SettingsHubLogicTest {
 
-    private fun titles(pages: List<Int>) = pages.map { CATS[it].title }
-
-    @Test fun jedeSeiteGenauEinmal() {
-        assertEquals(16, CATS.size)
-        assertEquals((0 until CATS.size).toList(), SettingsHubLogic.ORDER.sorted())
+    @Test fun jedeSeiteGenauEinmalInDerBisherigenReihenfolge() {
+        assertEquals(SettingsHubLogic.PAGE_COUNT, CATS.size)
+        // Anzeige-Reihenfolge = Reihenfolge in CATS (keine Gruppen mehr)
+        assertEquals((0 until CATS.size).toList(), SettingsHubLogic.ORDER)
+        assertTrue(SettingsHubLogic.ROWS.all { it.size <= SettingsHubLogic.COLUMNS })
+        assertEquals(6, SettingsHubLogic.ROWS.size)
     }
 
     @Test fun festeNummernBleiben() {
@@ -21,19 +22,11 @@ class SettingsHubLogicTest {
         assertEquals("Profile", CATS[SettingsNav.PROFILES].title)
         assertEquals("Playlists", CATS[9].title)
         assertEquals("Allgemein", CATS[0].title)
+        assertEquals("Genres & Kategorien", CATS[7].title)
+        assertEquals("Diagnose", CATS[14].title)
         assertEquals("Über Mozaik", CATS[15].title)
-    }
-
-    @Test fun gruppenUndReihenfolge() {
-        val g = SettingsHubLogic.GROUPS
-        assertEquals(listOf("Darstellung", "Wiedergabe", "Inhalte", "Konto & System"), g.map { it.title })
-        assertEquals(listOf("Allgemein", "Sprache & Region", "Ansicht", "Design", "Menü"), titles(g[0].pages))
-        assertEquals(listOf("Player", "Ton & Untertitel", "Live-TV & Guide"), titles(g[1].pages))
-        assertEquals(listOf("Genres & Kategorien", "Playlists", "API-Schlüssel"), titles(g[2].pages))
-        assertEquals(listOf("Profile", "Jugendschutz", "Speicher", "Diagnose", "Über Mozaik"), titles(g[3].pages))
-        assertEquals(listOf(0xF2CF4D, 0x4F9BFF, 0xA98BFF, 0xFF8FB1), g.map { it.color })
-        // Symbol in derselben Farbe wie Kreis und Überschrift
-        assertEquals(g.map { it.color }, g.map { it.iconColor })
+        // Eine Kachel „Spende“ gibt es in Mozaik nicht
+        assertTrue(CATS.none { it.title.contains("Spende") })
     }
 
     @Test fun rechtsLaeuftDurchAlleKacheln() {
@@ -59,10 +52,10 @@ class SettingsHubLogicTest {
             val up = SettingsHubLogic.move(p, Dir.UP)
             if (r == 0) assertNull(up) else assertEquals(rows[r - 1][minOf(c, rows[r - 1].lastIndex)], up)
         }
-        // Beispiel über eine Gruppengrenze: von „Menü“ (zweite Reihe, Spalte 2) runter zu „Ton & Untertitel“
-        assertEquals(6, SettingsHubLogic.move(4, Dir.DOWN))
-        // Aus der dritten Spalte runter in eine kurze Reihe: „Ansicht“ → „Menü“
-        assertEquals(4, SettingsHubLogic.move(2, Dir.DOWN))
+        // Gleiche Spalte eine Reihe tiefer: „Allgemein“ (0) → „Design“ (3)
+        assertEquals(3, SettingsHubLogic.move(0, Dir.DOWN))
+        // Letzte Reihe ist [15]: von 12, 13, 14 geht es runter zu 15
+        assertEquals(15, SettingsHubLogic.move(14, Dir.DOWN))
     }
 
     @Test fun linksAusErsterSpalteGehtInDieSeitenleiste() {
@@ -70,18 +63,27 @@ class SettingsHubLogicTest {
         assertEquals(0, SettingsHubLogic.move(1, Dir.LEFT))
     }
 
-    @Test fun ueberschriftenGutLesbar() {
-        // Gruppenfarbe als Schrift auf jedem Hintergrund mindestens 4,5:1
-        for (g in SettingsHubLogic.GROUPS) for (b in Look.BGS) {
-            assertTrue("${g.title} auf ${b.name}", ThemeMath.contrast(g.color, b.bg) >= 4.5)
+    @Test fun regenbogenNachPosition() {
+        val n = CATS.size
+        // Farbton läuft gleichmäßig von Rot (0°) bis Rosa (330°)
+        assertEquals(0f, ThemeMath.rgbToHsv(SettingsHubLogic.circleColor(0, n))[0], 2f)
+        assertEquals(330f, ThemeMath.rgbToHsv(SettingsHubLogic.circleColor(n - 1, n))[0], 2f)
+        // Alle Farben verschieden
+        assertEquals(n, (0 until n).map { SettingsHubLogic.circleColor(it, n) }.toSet().size)
+    }
+
+    @Test fun dunklesSymbolAufFarbigemKreisGutLesbar() {
+        // Dunkles Symbol auf dem voll farbigen Kreis mindestens 3:1 (Symbol, kein Text)
+        for (i in CATS.indices) {
+            val c = SettingsHubLogic.circleColor(i, CATS.size)
+            assertTrue("Kachel $i " + ThemeMath.hexOf(c), ThemeMath.contrast(SettingsHubLogic.ICON_INK, c) >= 3.0)
         }
     }
 
-    @Test fun symboleAufIhremKreisGutLesbar() {
-        // Symbol auf dem Kreis (Gruppenfarbe 16 % über der Kachelfläche) mindestens 4,5:1, auf jedem Hintergrund
-        for (g in SettingsHubLogic.GROUPS) for (b in Look.BGS) {
-            val circle = SettingsHubLogic.circleRgb(g.color, b.surf)
-            assertTrue("${g.title} auf ${b.name}", ThemeMath.contrast(g.iconColor, circle) >= 4.5)
-        }
+    @Test fun fokusRahmenUndUntertitelGutLesbar() {
+        // Fokus-Rahmen in Indigo hebt sich von der Kachel ab (mindestens 3:1 für Rahmen)
+        for (b in Look.BGS) assertTrue(b.name, ThemeMath.contrast(Look.BRAND_ACCENT_HI, b.surf) >= 3.0)
+        // Grauer Untertitel (Tok.TextLow #A0A6B8) auf der Kachelfläche mindestens 4,5:1
+        for (b in Look.BGS) assertTrue(b.name, ThemeMath.contrast(0xA0A6B8, b.surf) >= 4.5)
     }
 }

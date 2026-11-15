@@ -97,7 +97,29 @@ object ThemeMath {
         return fill to hi
     }
 
-    /** Dunkle Schrift für helle Akzentfarben (z. B. das Standard-Orange): fast Schwarz #07080B. */
+    /**
+     * Die beiden Töne der Firmenfarbe, automatisch aus einer einzigen Grundfarbe [base] abgeleitet (Farbton bleibt):
+     * - Fläche: so weit abgedunkelt, bis weiße Schrift darauf mindestens 4,5 : 1 erreicht.
+     * - Hervorhebung: die Grundfarbe selbst, falls sie als Schrift oder Rahmen auf allen [grounds] mindestens 4,5 : 1 hat,
+     *   sonst so weit aufgehellt (erst heller, dann weniger gesättigt), bis das auf allen Gründen erreicht ist.
+     */
+    fun brandTones(base: Int, grounds: List<Int>): Pair<Int, Int> {
+        val hsv = rgbToHsv(base)
+        val h = hsv[0]
+        val s = hsv[1]
+        var v = hsv[2]
+        var fill = base
+        while (contrast(0xFFFFFF, fill) < 4.5 && v > 0.05f) { v -= 0.01f; fill = hsv(h, s, v) }
+        fun ok(c: Int) = grounds.all { contrast(c, it) >= 4.5 }
+        var w = hsv[2]
+        var sat = s
+        var hi = base
+        while (!ok(hi) && w < 1f) { w = (w + 0.01f).coerceAtMost(1f); hi = hsv(h, sat, w) }
+        while (!ok(hi) && sat > 0f) { sat = (sat - 0.01f).coerceAtLeast(0f); hi = hsv(h, sat, w) }
+        return fill to hi
+    }
+
+    /** Dunkle Schrift für helle Akzentfarben: fast Schwarz #07080B. */
     const val INK = 0x07080B
 
     /**

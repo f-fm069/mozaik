@@ -412,7 +412,7 @@ private fun ChannelLine(item: Item, modifier: Modifier, inList: ChList?, onNewLi
             .then(if (f) Modifier.shadow(18.dp, shape, ambientColor = Tok.Lift, spotColor = Tok.Lift) else Modifier)
             .clip(shape)
             .background(if (f) Color(0x29FFFFFF) else Color(0x0AFFFFFF))
-            .border(1.dp, if (f) Color(0x40FFFFFF) else Color.Transparent, shape)
+            .border(DS.Border, if (f) Accent2 else Color.Transparent, shape)
             .onFocusChanged { f = it.isFocused; if (it.isFocused) onFocus() }
             .menuKeys(onMenu = { menu = true }, onLong = { menu = true })
             .clickable(onClick = onClick)

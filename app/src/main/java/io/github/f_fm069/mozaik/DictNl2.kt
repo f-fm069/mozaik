@@ -129,7 +129,6 @@ Eigene Farbe¦Eigen kleur
 Übernehmen¦Toepassen
 Ungültig¦Ongeldig
 Wähle ein Farbfeld oder gib einen Hex-Code ein, z. B. #FF6A00. Die App passt die Farbe automatisch so an, dass Schrift immer gut lesbar bleibt.¦Kies een kleurvlak of voer een hexcode in, bijv. #FF6A00. De app past de kleur automatisch aan zodat tekst altijd goed leesbaar blijft.
-Darstellung¦Weergave
 Animationen¦Animaties
 Anzeigegröße¦Weergavegrootte
 Oberfläche aktuell ×¦Interface nu ×

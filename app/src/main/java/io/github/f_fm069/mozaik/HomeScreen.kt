@@ -310,7 +310,7 @@ fun HomeScreen(
     val nowChannels = remember(favLive, hist, live) {
         (favLive + hist.filter { it.kind == Kind.LIVE }).distinctBy { it.id }.ifEmpty { live.take(20) }
     }
-    // Schnellzugriff-Kacheln im Stil der Einstellungs-Kacheln: Farbe nur im runden Symbolkreis (HomeTilesLogic)
+    // Schnellzugriff-Kacheln im Stil der Einstellungs-Kacheln: Akzentfarbe nur im runden Symbolkreis und im Fokus-Rahmen
     val tiles = listOf(
         QuickTile("Live TV", "${live.size} Sender", HomeTilesLogic.LIVE) { onTab(3) },
         QuickTile("Filme", "${movies.size} Filme", HomeTilesLogic.MOVIES) { onTab(1) },

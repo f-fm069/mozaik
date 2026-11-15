@@ -313,7 +313,7 @@ fun RowTitle(
     }
 }
 
-/** Eine Schnellzugriff-Kachel: Titel, Untertitel, Pfeil und ein runder Symbolkreis in der Bereichsfarbe (siehe HomeTilesLogic). */
+/** Eine Schnellzugriff-Kachel: Titel, Untertitel, Pfeil und ein runder Symbolkreis in der Akzentfarbe (siehe HomeTilesLogic). */
 class QuickTile(val title: String, val sub: String, val color: HomeTilesLogic.TileColor, val onClick: () -> Unit)
 
 /** Fünf gleich breite Kacheln über die ganze Zeile. */
@@ -328,18 +328,18 @@ fun QuickTiles(tiles: List<QuickTile>) {
     }
 }
 
-/** Gleicher Aufbau wie die Einstellungs-Kacheln: Fläche des Hintergrunds, dezenter Rahmen, weißer Fokus-Rahmen. */
+/** Gleicher Aufbau wie die Einstellungs-Kacheln: Fläche des Hintergrunds, dezenter Rahmen, Symbol und Fokus-Rahmen in der Akzentfarbe. */
 @Composable
 private fun QuickTileCard(t: QuickTile, modifier: Modifier) {
     var f by remember { mutableStateOf(false) }
     val s by animateFloatAsState(if (f) focusScale(1.04f) else 1f, label = "qt")
     val shape = RoundedCornerShape(dpx(14))
-    val ring = Color(0xFF000000.toInt() or t.color.ring)
-    val ink = Color(0xFF000000.toInt() or t.color.symbol)
+    val ring = Accent2
+    val ink = Accent2
     Row(
         modifier.height(dpx(88)).graphicsLayer { scaleX = s; scaleY = s }.clip(shape)
             .background(Surf)
-            .border(if (f) 3.dp else 1.dp, if (f) Color.White else Color(0x1FFFFFFF), shape)
+            .border(if (f) 3.dp else 1.dp, if (f) Accent2 else Color(0x1FFFFFFF), shape)
             .onFocusChanged { f = it.isFocused }
             .trackFocus()
             .clickable(onClick = t.onClick)
@@ -364,7 +364,7 @@ fun ChannelNowCard(item: Item, modifier: Modifier, onClick: () -> Unit) {
     val ctx = LocalContext.current
     var f by remember { mutableStateOf(false) }
     val s by animateFloatAsState(if (f) focusScale(1.06f) else 1f, label = "chnow")
-    val border by animateColorAsState(if (f) Color.White else CardLine, label = "chb")
+    val border by animateColorAsState(if (f) Accent2 else CardLine, label = "chb")
     val shape = RoundedCornerShape(dpx(10))
     val epg by produceState(emptyList<EpgEntry>(), item.id) { value = Epg.now(item) }
     val nowE = Epg.current(epg)
@@ -425,7 +425,7 @@ fun PosterTile(item: Item, modifier: Modifier, onClick: () -> Unit) {
     Box(
         modifier.aspectRatio(2f / 3f).graphicsLayer { scaleX = s; scaleY = s }.focusGlow(f, shape).clip(shape)
             .background(Brush.linearGradient(listOf(colorFor(item).copy(alpha = .75f), Surf2)))
-            .border(1.dp, if (f) Color(0x40FFFFFF) else CardLine, shape)
+            .border(if (f) DS.FocusBorder else 1.dp, if (f) Accent2 else CardLine, shape)
             .billboardFocus(item) { f = it }
             .trackFocus()
             .clickable(onClick = onClick),
@@ -453,7 +453,7 @@ fun LandscapeCard(item: Item, modifier: Modifier, onClick: () -> Unit) {
     Box(
         modifier.aspectRatio(1.3f).graphicsLayer { scaleX = s; scaleY = s }.focusGlow(f, shape).clip(shape)
             .background(Brush.linearGradient(listOf(colorFor(item).copy(alpha = .75f), Surf2)))
-            .border(1.dp, if (f) Color(0x40FFFFFF) else CardLine, shape)
+            .border(if (f) DS.FocusBorder else 1.dp, if (f) Accent2 else CardLine, shape)
             .billboardFocus(item) { f = it }
             .trackFocus()
             .clickable(onClick = onClick)
@@ -606,7 +606,7 @@ fun RowPosterCard(item: Item, baseW: Dp, modifier: Modifier, overlay: Int = 0, a
     Box(
         mod.graphicsLayer { scaleX = s; scaleY = s }.focusGlow(f, shape).clip(shape)
             .background(Brush.linearGradient(listOf(colorFor(item).copy(alpha = .75f), Surf2)))
-            .border(1.dp, if (f) Color(0x40FFFFFF) else CardLine, shape)
+            .border(if (f) DS.FocusBorder else 1.dp, if (f) Accent2 else CardLine, shape)
     ) {
         // Unten das Poster, darüber blendet das Szenenbild mit dem Fortschritt ein (kein Crossfade-Wechsel)
         val img: String? = when {
@@ -745,7 +745,7 @@ fun ChannelDetailCard(item: Item, modifier: Modifier, onClick: () -> Unit) {
     Column(
         modifier.height(dpx(172)).graphicsLayer { scaleX = s; scaleY = s }.focusGlow(f, shape).clip(shape)
             .background(if (f) Tok.CardFocus else CardBg)
-            .border(if (f) 3.dp else 1.dp, if (f) Color.White else CardLine, shape)
+            .border(if (f) 3.dp else 1.dp, if (f) Accent2 else CardLine, shape)
             .onFocusChanged { f = it.isFocused }
             .trackFocus()
             .favKeys { Library.toggleFav(ctx, item.id) }

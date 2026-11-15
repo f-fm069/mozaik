@@ -19,14 +19,35 @@ class BgPreset(val name: String, val bg: Int, val surf: Int, val surf2: Int)
  * dadurch ändert sich beim Umschalten die ganze App sofort, ohne dass irgendein Bildschirm angepasst werden muss.
  */
 object Look {
-    /** Standard-Design: Orange #FF8A1F (Hervorhebung #FFB45C) passend zum Logo, auf OLED-Schwarz (siehe DEFAULT_BG). Schrift auf Orange ist dunkel (siehe ThemeMath.INK). */
-    const val BRAND_ACCENT = 0xFF8A1F
-    const val BRAND_ACCENT_HI = 0xFFB45C
+    /**
+     * Firmenfarbe Indigo #6D6BFF – die EINZIGE Stelle, an der sie festgelegt ist. Alle anderen Töne werden daraus abgeleitet:
+     * Fläche [BRAND_ACCENT] (weiße Schrift darauf, mindestens 4,5 : 1) und Hervorhebung [BRAND_ACCENT_HI]
+     * (Schrift, Symbole und Fokusrahmen auf allen Hintergründen und Flächen, mindestens 4,5 : 1), siehe ThemeMath.brandTones.
+     */
+    const val BRAND_BASE = 0x6D6BFF
     const val BRAND_NAVY = 0x0B0F19
-    /** Standard: Mozaik-Orange (Runde 13e: die Entwurfs-Farben wurden wieder entfernt). */
+    /** Frühere Firmenfarbe (Orange) – nur noch, um gespeicherte eigene Farben einmalig umzustellen (Store, look_ver 7). */
+    const val OLD_BRAND_ACCENT = 0xFF8A1F
+    const val OLD_BRAND_ACCENT_HI = 0xFFB45C
+    /** Standard: Mozaik-Indigo (Thema an Stelle 0). */
     const val DEFAULT_ACCENT = 0
     /** Standard-Hintergrund: OLED-Schwarz (Index 2 in [BGS]). Die Reihenfolge von BGS nicht ändern, gespeicherte Nummern zeigen darauf. */
     const val DEFAULT_BG = 2
+
+    // BGS steht vor den Firmenfarben, weil diese gegen alle Hintergründe und Flächen geprüft werden.
+    val BGS = listOf(
+        BgPreset("Mozaik Navy", BRAND_NAVY, 0x151B2A, 0x1F2739),
+        BgPreset("Mitternacht", 0x07080C, 0x12141C, 0x1B1E2A),
+        BgPreset("OLED-Schwarz", 0x000000, 0x0B0C10, 0x15171E),
+        BgPreset("Graphit", 0x121316, 0x1C1E24, 0x272A32),
+        BgPreset("Tiefblau", 0x070B14, 0x101828, 0x1A2540)
+    )
+
+    private val BRAND_TONES = ThemeMath.brandTones(BRAND_BASE, BGS.flatMap { listOf(it.bg, it.surf, it.surf2) })
+    /** Fläche (Knöpfe, Balken, Schalter); weiße Schrift darauf. */
+    val BRAND_ACCENT: Int = BRAND_TONES.first
+    /** Hervorhebung (Schrift, Symbole, Fokusrahmen auf dunklem Grund). */
+    val BRAND_ACCENT_HI: Int = BRAND_TONES.second
 
     val ACCENTS = listOf(
         AccentPreset("Mozaik", BRAND_ACCENT, BRAND_ACCENT_HI),
@@ -49,14 +70,6 @@ object Look {
     )
     /** Index nach den Voreinstellungen = eigene Farbe (frei gewählt, siehe [custom]). */
     val CUSTOM get() = ACCENTS.size
-
-    val BGS = listOf(
-        BgPreset("Mozaik Navy", BRAND_NAVY, 0x151B2A, 0x1F2739),
-        BgPreset("Mitternacht", 0x07080C, 0x12141C, 0x1B1E2A),
-        BgPreset("OLED-Schwarz", 0x000000, 0x0B0C10, 0x15171E),
-        BgPreset("Graphit", 0x121316, 0x1C1E24, 0x272A32),
-        BgPreset("Tiefblau", 0x070B14, 0x101828, 0x1A2540)
-    )
 
     /** Standard: 85 % (Index 1) – zeigt mehr Inhalt, Elemente bleiben gut lesbar. */
     const val DEFAULT_SCALE = 1

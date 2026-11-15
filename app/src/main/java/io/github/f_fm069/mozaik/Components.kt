@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 
 private val palette = listOf(
-    0xFF7C5CFF, 0xFF00B8AE, 0xFFE0566B, 0xFFE59A2F, 0xFF3F8EE8, 0xFFA855F7
+    0xFF7C5CFF, 0xFF00B8AE, 0xFFE0566B, 0xFF5A63D8, 0xFF3F8EE8, 0xFFA855F7
 ).map { Color(it) }
 
 fun colorFor(item: Item): Color = palette[(item.title.hashCode() and 0x7fffffff) % palette.size]

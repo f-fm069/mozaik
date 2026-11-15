@@ -172,7 +172,7 @@ private fun PhoneCard(modifier: Modifier, address: String?, code: String) {
         if (address == null) {
             Text(
                 "Die Übertragung vom Handy ist gerade nicht verfügbar. Das Gerät muss mit dem WLAN verbunden sein.",
-                color = Color(0xFFFFB86B), fontSize = 17.sp, lineHeight = 24.sp
+                color = DS.Gold, fontSize = 17.sp, lineHeight = 24.sp
             )
         } else {
             Step(1, "Handy mit demselben WLAN verbinden wie dieses Gerät.")

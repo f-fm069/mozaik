@@ -93,30 +93,22 @@ fun SettingsHub(onAdd: () -> Unit, reload: () -> Unit) {
     // Kein eigenes verticalScroll: Der Einstellungs-Tab liegt in einer LazyColumn, die selbst scrollt.
     Column(Modifier.padding(horizontal = DS.PageX, vertical = dpx(20)), verticalArrangement = Arrangement.spacedBy(dpx(18))) {
         if (page < 0) {
-            // Ruhige Kacheln auf der Fläche des Hintergrunds, Farbe nur im Symbol je Gruppe, weißer Fokus-Rahmen
+            // Wie im Original: eine Liste in 3 Spalten ohne Überschriften. Dunkle Kacheln, nur der runde Symbolkreis ist farbig
+            // (Regenbogen nach Position), Fokus-Rahmen in der Akzentfarbe.
             Column(verticalArrangement = Arrangement.spacedBy(dpx(4))) {
                 Text("Einstellungen", color = Color.White, fontSize = spx(38), fontWeight = FontWeight.ExtraBold)
                 Text("Alles rund um Aussehen, Wiedergabe und Konto", color = Tok.TextLow, fontSize = spx(16))
             }
-            // Gruppen mit Überschrift; jede Kachel öffnet über ihre feste Seitennummer p (nicht über die Anzeige-Position)
-            SettingsHubLogic.GROUPS.forEach { g ->
-                val gc = Color(0xFF000000.toInt() or g.color)
-                val ic = Color(0xFF000000.toInt() or g.iconColor)
-                Column(verticalArrangement = Arrangement.spacedBy(dpx(14))) {
-                    Text(
-                        Lang.tr(g.title).uppercase(Lang.locale()), raw = true, color = gc, fontSize = spx(14),
-                        fontWeight = FontWeight.Bold, letterSpacing = 1.8.sp, modifier = Modifier.padding(top = dpx(8))
-                    )
-                    g.pages.chunked(SettingsHubLogic.COLUMNS).forEach { row ->
-                        Row(horizontalArrangement = Arrangement.spacedBy(dpx(16))) {
-                            row.forEach { p ->
-                                SettingsCard(
-                                    CATS[p], gc, ic,
-                                    Modifier.weight(1f).focusRequester(cardFocus[p]).onPreviewKeyEvent { e -> settingsArrow(e, p, cardFocus) }
-                                ) { last = p; page = p }
-                            }
-                            repeat(SettingsHubLogic.COLUMNS - row.size) { Spacer(Modifier.weight(1f)) }
+            Column(verticalArrangement = Arrangement.spacedBy(dpx(16))) {
+                SettingsHubLogic.ROWS.forEach { row ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(dpx(16))) {
+                        row.forEach { p ->
+                            SettingsCard(
+                                CATS[p], Color(0xFF000000.toInt() or SettingsHubLogic.circleColor(p, CATS.size)),
+                                Modifier.weight(1f).focusRequester(cardFocus[p]).onPreviewKeyEvent { e -> settingsArrow(e, p, cardFocus) }
+                            ) { last = p; page = p }
                         }
+                        repeat(SettingsHubLogic.COLUMNS - row.size) { Spacer(Modifier.weight(1f)) }
                     }
                 }
             }
@@ -177,29 +169,33 @@ private fun settingsArrow(e: KeyEvent, page: Int, focus: List<FocusRequester>): 
     return true
 }
 
-/** Kachel: Fläche des Hintergrund-Schemas, dezenter Rahmen; nur das runde Symbolfeld trägt die Gruppenfarbe. */
+/**
+ * Kachel: dunkle Fläche des Hintergrund-Schemas, dezenter Rahmen; links ein voll farbiger Kreis [ring] mit dunklem Symbol.
+ * Mit Fokus: Rahmen in der Akzentfarbe und ein leichter Akzent-Ton auf der Fläche.
+ */
 @Composable
-private fun SettingsCard(cat: Cat, ring: Color, ink: Color, modifier: Modifier, onClick: () -> Unit) {
+private fun SettingsCard(cat: Cat, ring: Color, modifier: Modifier, onClick: () -> Unit) {
     var f by remember { mutableStateOf(false) }
     val s by animateFloatAsState(if (f) focusScale(1.04f) else 1f, label = "sc")
     val shape = RoundedCornerShape(dpx(14))
     Row(
         modifier.height(dpx(96)).graphicsLayer { scaleX = s; scaleY = s }.clip(shape)
-            .background(Surf)
-            .border(if (f) 3.dp else 1.dp, if (f) Color.White else Color(0x1FFFFFFF), shape)
+            .background(if (f) androidx.compose.ui.graphics.lerp(Surf, Accent1, 0.14f) else Surf)
+            .border(if (f) 3.dp else 1.dp, if (f) Accent2 else Color(0x1FFFFFFF), shape)
             .onFocusChanged { f = it.isFocused }
             .trackFocus()
-            .clickable(onClick = onClick)
+            // Ohne den grauen Standard-Schleier beim Fokus: Rahmen und Akzent-Ton zeigen den Fokus, Kreis und Text bleiben klar
+            .clickable(interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }, indication = null, onClick = onClick)
             .padding(horizontal = dpx(20)),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(dpx(16))
     ) {
-        Box(Modifier.size(dpx(48)).clip(CircleShape).background(ring.copy(alpha = SettingsHubLogic.CIRCLE_ALPHA)), contentAlignment = Alignment.Center) {
-            AppIcon(cat.icon, ink, size = dpx(28))
+        Box(Modifier.size(dpx(48)).clip(CircleShape).background(ring), contentAlignment = Alignment.Center) {
+            AppIcon(cat.icon, Color(0xFF000000.toInt() or SettingsHubLogic.ICON_INK), size = dpx(26))
         }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(dpx(3))) {
             Text(cat.title, color = Color.White, fontSize = spx(20), fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text(cat.sub, color = Tok.TextMid, fontSize = spx(13), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(cat.sub, color = Tok.TextLow, fontSize = spx(13), maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
         AppIcon(AIcon.Right, Color.White, size = dpx(18))
     }
@@ -470,7 +466,7 @@ private fun GeneralPage(ctx: Context) {
             IconLabel(
                 if (granted) AIcon.Check else AIcon.Warning,
                 if (granted) "Berechtigung erteilt" else "Berechtigung „Über anderen Apps einblenden“ fehlt",
-                if (granted) Accent2 else Color(0xFFFFB454), 15.sp, iconSize = 16.dp, maxLines = 2
+                if (granted) Accent2 else DS.Gold, 15.sp, iconSize = 16.dp, maxLines = 2
             )
             if (!granted) SmallPill("Einstellung öffnen") { openOverlaySettings(ctx) }
             SmallPill("Prüfen") { tick++ }
@@ -728,7 +724,7 @@ private fun DesignPage(ctx: Context) {
             if (slot == 1 && Look.custom2 >= 0) PillButton("Automatisch") { save(custom2 = -1) }
         }
         if (Look.custom2 >= 0 && ThemeMath.contrast(Look.custom2, Look.BGS[Look.bgIdx.coerceIn(0, Look.BGS.lastIndex)].bg) < 3.0) {
-            Text("Farbe 2 ist auf diesem Hintergrund schwer lesbar.", color = Color(0xFFFFB454), fontSize = 15.sp)
+            Text("Farbe 2 ist auf diesem Hintergrund schwer lesbar.", color = DS.Gold, fontSize = 15.sp)
         }
         Hint("Farbe 1 färbt Knöpfe, Balken und markierte Flächen – die Schrift darauf wird automatisch hell oder dunkel, damit sie lesbar bleibt. Farbe 2 färbt Hervorhebungen, Rahmen und farbige Schrift. „Automatisch“ berechnet Farbe 2 passend zu Farbe 1.")
     }

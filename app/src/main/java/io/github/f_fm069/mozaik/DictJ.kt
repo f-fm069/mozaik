@@ -167,8 +167,6 @@ Mit der Handy-Kamera scannen¦Scan with your phone camera¦Telefon kamerasıyla 
 Folgen werden geladen …¦Loading episodes …¦Bölümler yükleniyor …¦Učitavanje epizoda …¦Učitavanje epizoda …¦Učitavanje epizoda …¦Cargando episodios …¦Chargement des épisodes …¦Caricamento degli episodi …
 Die Folgen konnten nicht geladen werden. Verbindung oder Zugang prüfen.¦The episodes could not be loaded. Check your connection or account.¦Bölümler yüklenemedi. Bağlantıyı veya hesabı kontrol edin.¦Epizode nisu mogle biti učitane. Provjerite vezu ili pristup.¦Epizode nisu mogle biti učitane. Provjerite vezu ili pristup.¦Epizode nisu mogle biti učitane. Proverite vezu ili pristup.¦No se pudieron cargar los episodios. Comprueba la conexión o la cuenta.¦Impossible de charger les épisodes. Vérifiez la connexion ou le compte.¦Impossibile caricare gli episodi. Controlla la connessione o l’account.
 # Einstellungs-Startseite: Gruppen
-Wiedergabe¦Playback¦Oynatma¦Reprodukcija¦Reprodukcija¦Reprodukcija¦Reproducción¦Lecture¦Riproduzione
-Konto & System¦Account & system¦Hesap ve sistem¦Račun i sistem¦Račun i sustav¦Nalog i sistem¦Cuenta y sistema¦Compte et système¦Account e sistema
 # Lücken aus der Übersetzungsprüfung (Player, Fehler, Handy-Seite)
 {0} (evtl. nicht abspielbar)¦{0} (may not play)¦{0} (oynatılamayabilir)¦{0} (možda se ne može pustiti)¦{0} (možda se ne može reproducirati)¦{0} (možda ne može da se pusti)¦{0} (puede que no se reproduzca)¦{0} (lecture peut-être impossible)¦{0} (potrebbe non essere riproducibile)
 Nächste Sendung¦Next program¦Sonraki program¦Sljedeća emisija¦Sljedeća emisija¦Sledeća emisija¦Siguiente programa¦Programme suivant¦Programma successivo

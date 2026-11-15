@@ -1,33 +1,39 @@
 package io.github.f_fm069.mozaik
 
 /**
- * Gruppen und Pfeiltasten-Navigation der Einstellungs-Startseite (ohne Android, durch Unit-Tests abgedeckt).
+ * Kacheln, Farben und Pfeiltasten-Navigation der Einstellungs-Startseite (ohne Android, durch Unit-Tests abgedeckt).
  *
- * Jede Kachel behält ihre feste Seitennummer (Position in CATS in SettingsHub.kt). Nur die Anzeige wird nach
- * Gruppen sortiert; Öffnen, Überschrift der Unterseite und Direktsprünge (z. B. SettingsNav.PROFILES) laufen
- * weiter über diese Nummer.
+ * Wie im Original IPVIO Stream: eine einzige Liste in [COLUMNS] Spalten, ohne Gruppenüberschriften, in der Reihenfolge
+ * von CATS (SettingsHub.kt). Die Position ist zugleich die feste Seitennummer (Öffnen, Überschrift der Unterseite,
+ * Direktsprünge wie SettingsNav.PROFILES). Die Kacheln sind dunkel; nur der runde Symbolkreis trägt eine Farbe,
+ * die wie im Original der Position folgt (Regenbogen, siehe [circleColor]).
  */
 object SettingsHubLogic {
-    /**
-     * Eine Gruppe: Überschrift (deutscher Schlüssel, wird übersetzt), Farbe 0xRRGGBB (Überschrift und Kreis),
-     * Seitennummern in Anzeige-Reihenfolge und die Farbe des Symbols (meist gleich der Gruppenfarbe).
-     */
-    class Group(val title: String, val color: Int, val pages: List<Int>, val iconColor: Int = color)
-
     const val COLUMNS = 3
 
-    /** Deckkraft des runden Symbolfelds in der Gruppenfarbe. */
+    /** Anzahl der Kacheln (= Größe von CATS, durch einen Test abgesichert). */
+    const val PAGE_COUNT = 16
+
+    /** Dunkle Farbe des Symbols im farbigen Kreis (wie DS.FocusInk). */
+    const val ICON_INK = 0x0B0F19
+
+    /** Deckkraft des runden Symbolfelds der Startseiten-Kacheln (HomeParts) in der Akzentfarbe. */
     const val CIRCLE_ALPHA = 0.16f
 
-    val GROUPS = listOf(
-        // Klares Gelb statt Gold, damit die Gruppe sich vom Akzent-Orange abhebt
-        Group("Darstellung", 0xF2CF4D, listOf(0, 1, 2, 3, 4)),        // Allgemein, Sprache & Region, Ansicht, Design, Menü
-        Group("Wiedergabe", 0x4F9BFF, listOf(5, 6, 8)),               // Player, Ton & Untertitel, Live-TV & Guide
-        Group("Inhalte", 0xA98BFF, listOf(7, 9, 11)),                 // Genres & Kategorien, Playlists, API-Schlüssel
-        Group("Konto & System", 0xFF8FB1, listOf(10, 12, 13, 14, 15)) // Profile, Jugendschutz, Speicher, Diagnose, Über Mozaik
-    )
+    /**
+     * Farbe des Symbolkreises der Kachel an Position [index] von [count]: Farbton gleichmäßig von 0° (rot) bis 330° (rosa).
+     * Der Kreis ist hell genug, dass das dunkle Symbol [ICON_INK] darauf mindestens 3 : 1 Kontrast hat
+     * (bei zu dunklen Tönen, etwa Blau, wird er heller und etwas weniger gesättigt).
+     */
+    fun circleColor(index: Int, count: Int = PAGE_COUNT): Int {
+        val hue = if (count <= 1) 0f else index * 330f / (count - 1)
+        var s = 0.62f
+        var c = ThemeMath.hsv(hue, s, 0.96f)
+        while (ThemeMath.contrast(ICON_INK, c) < 3.0 && s > 0f) { s = (s - 0.02f).coerceAtLeast(0f); c = ThemeMath.hsv(hue, s, 0.96f) }
+        return c
+    }
 
-    /** Farbe des Kreises: Gruppenfarbe mit [CIRCLE_ALPHA] über der Kachelfläche [surf] (für die Kontrastprüfung). */
+    /** Farbe des Kreises: Akzentfarbe [color] mit [CIRCLE_ALPHA] über der Kachelfläche [surf] (für die Kontrastprüfung). */
     fun circleRgb(color: Int, surf: Int): Int {
         fun ch(shift: Int): Int {
             val a = (surf shr shift) and 0xFF
@@ -37,8 +43,8 @@ object SettingsHubLogic {
         return ch(16) or ch(8) or ch(0)
     }
 
-    /** Alle Kachel-Reihen von oben nach unten (je Gruppe in Reihen zu je [COLUMNS]). */
-    val ROWS: List<List<Int>> = GROUPS.flatMap { it.pages.chunked(COLUMNS) }
+    /** Alle Kachel-Reihen von oben nach unten (je [COLUMNS] Kacheln, die letzte Reihe darf kürzer sein). */
+    val ROWS: List<List<Int>> = (0 until PAGE_COUNT).toList().chunked(COLUMNS)
 
     /** Seitennummern in Anzeige-Reihenfolge. */
     val ORDER: List<Int> = ROWS.flatten()

@@ -47,6 +47,8 @@ Allow "Install unknown apps" for Downloader (or your file manager) when asked, t
 - Categories, favourites and your own channel lists
 - TV guide, catch-up/archive ("from the beginning"), reminders with notification
 - Rewind live TV with an on-device buffer, record the current show (internal storage or USB)
+- Optional "Fast channel switching" (Settings > Player): live channels start with a shorter buffer; off by default
+- When switching channels the last picture stays until the new channel appears, instead of a black screen ("Keep last picture while switching", on by default)
 - Sports section: sports on now and coming up, all sports channels
 
 **Player** (Media3 / ExoPlayer)

@@ -44,11 +44,12 @@ object Mem {
         else -> intArrayOf(30_000, 60_000, 2_500, 5_000, -1)
     }
 
-    fun loadControl(ctx: Context): DefaultLoadControl {
-        val p = BufferLogic.scale(bufferPlan(tier(ctx)), BufferLogic.level(AppSettings.bufferMode, AppSettings.bufferLearned))
+    fun loadControl(ctx: Context): AdaptiveLoadControl {
+        val base = bufferPlan(tier(ctx))
+        val p = BufferLogic.scale(base, BufferLogic.level(AppSettings.bufferMode, AppSettings.bufferLearned))
         val b = DefaultLoadControl.Builder().setBufferDurationsMs(p[0], p[1], p[2], p[3])
         if (p[4] > 0) b.setTargetBufferBytes(p[4]).setPrioritizeTimeOverSizeThresholds(false)
-        return b.build()
+        return AdaptiveLoadControl(b.build(), base[2], base[3], p[4])
     }
 
     /** Wahr, wenn der Java-Speicher der App zu mehr als [limit] belegt ist (Hintergrundarbeit hält dann an, statt abzustürzen). */

@@ -117,10 +117,16 @@ class LiveTap(val id: Int, val url: String, private val dir: File, private val m
                         }
                         val ins = r.body?.byteStream() ?: throw IOException("leer")
                         backoff = 1000L
+                        // Messung Kanalwechsel (Diagnose): Server hat geantwortet, dann erste Daten
+                        ZapProbe.tapConnected(url)
+                        var first = true
                         while (!closed) {
                             val n = ins.read(buf)
                             if (n < 0) break   // Server hat den Stream beendet: neu verbinden
-                            if (n > 0) append(buf, n)
+                            if (n > 0) {
+                                if (first) { first = false; ZapProbe.tapData(url) }
+                                append(buf, n)
+                            }
                         }
                     }
                 } catch (e: IOException) {

@@ -262,6 +262,8 @@ private fun AppContent() {
                 }
             }
         }
+        // Messung Kanalwechsel (Diagnose): Zeit ab dem Druck auf OK
+        if (item.kind == Kind.LIVE) ZapProbe.begin()
         playing = PlayReq(title, playUrl, item.id, item.kind == Kind.LIVE, startMs, tmdb, season, ep, alts, note)
     }
 

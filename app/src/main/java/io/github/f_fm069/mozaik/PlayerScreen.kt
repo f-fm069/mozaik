@@ -146,13 +146,19 @@ fun PlayerScreen(req: PlayReq, zapList: List<Item>, liveAll: List<Item>, seriesI
     CatFavs.init(ctx)
     // Eigene HTTP-Einstellungen: folgt Weiterleitungen auch von http nach https (viele IPTV-Server tun das)
     // und gibt nach 10 s Verbindungsaufbau bzw. 15 s Lesezeit auf, statt endlos zu warten.
+    // Puffersteuerung: Startpuffer je nach gelernter Stufe und „Schneller Kanalwechsel“ (nur Live)
+    val loadCtl = remember { Mem.loadControl(ctx) }
+    // „Beim Umschalten letztes Bild halten“
+    val hold = remember { FrameHold() }
     val player = remember {
         val http = DefaultHttpDataSource.Factory()
             .setAllowCrossProtocolRedirects(true)
             .setConnectTimeoutMs(10_000)
             .setReadTimeoutMs(15_000)
+            // Messung Kanalwechsel (Diagnose): beobachtet nur, ändert nichts an der Wiedergabe
+            .setTransferListener(ZapProbe.transfer)
         ExoPlayer.Builder(ctx, SoftAudio.factory(ctx))
-            .setLoadControl(Mem.loadControl(ctx))
+            .setLoadControl(loadCtl)
             .setWakeMode(C.WAKE_MODE_NETWORK)
             // „tap://“ = Live-Puffer auf dem Gerät (Zurückspulen, Aufnahme), alles andere wie bisher
             .setMediaSourceFactory(DefaultMediaSourceFactory(ctx).setDataSourceFactory(TapAwareDataSource.Factory(DefaultDataSource.Factory(ctx, http))))
@@ -160,6 +166,7 @@ fun PlayerScreen(req: PlayReq, zapList: List<Item>, liveAll: List<Item>, seriesI
             .also {
                 // Bildrate: nur wechseln, wenn der Fernseher das nahtlos kann (kein Aufblitzen); abschaltbar unter Einstellungen > Player
                 it.videoChangeFrameRateStrategy = if (AppSettings.autoFps) C.VIDEO_CHANGE_FRAME_RATE_STRATEGY_ONLY_IF_SEAMLESS else C.VIDEO_CHANGE_FRAME_RATE_STRATEGY_OFF
+                it.addAnalyticsListener(ZapProbe.Analytics(ctx, it))
             }
     }
     val h = remember { Handler(Looper.getMainLooper()) }
@@ -194,6 +201,8 @@ fun PlayerScreen(req: PlayReq, zapList: List<Item>, liveAll: List<Item>, seriesI
     val audioOnSecond = DualPrefs.audioSecond
     val dualSplit = second != null && splitMode == 1
     LaunchedEffect(second, audioOnSecond) { player.volume = if (second != null && audioOnSecond) 0f else 1f }
+    /** Lautstärke des Haupt-Players, wenn nichts stummgeschaltet sein soll (Ton beim zweiten Stream = stumm). */
+    fun wantedVolume() = if (second != null && DualPrefs.audioSecond) 0f else 1f
     LaunchedEffect(showChannels) { if (!showChannels) pickSecond = false }
     var showCats by remember { mutableStateOf(false) }
     var showGuide by remember { mutableStateOf(false) }
@@ -327,6 +336,10 @@ fun PlayerScreen(req: PlayReq, zapList: List<Item>, liveAll: List<Item>, seriesI
     }
 
     fun switchTo(it: Item, src: List<Item>) {
+        ZapProbe.begin()
+        // Letztes Bild halten, bis der neue Sender sein erstes Bild zeigt; der alte Ton ist sofort aus
+        if (HoldLogic.shouldHold(AppSettings.holdFrame, it.url, cur.url, player.videoSize.width, player.playerError != null)) hold.capture()
+        if (HoldLogic.shouldMute(AppSettings.holdFrame, it.url, cur.url)) player.volume = 0f
         if ((cur.live || cur.archive != null) && cur.itemId != it.id) lastChId = cur.itemId
         History.add(ctx, it.id)
         cur = PlayReq(it.title, it.url, it.id, true, 0L)
@@ -618,6 +631,8 @@ fun PlayerScreen(req: PlayReq, zapList: List<Item>, liveAll: List<Item>, seriesI
         val tick = object : Runnable {
             override fun run() {
                 saveProgress()
+                // Ruhige Wiedergabe: gelernter Puffer wird nach einer Weile wieder kleiner
+                if (player.isPlaying) AppSettings.notePlaying(5000L)
                 val nowT = System.currentTimeMillis()
                 if (player.playbackState == Player.STATE_BUFFERING && player.playWhenReady && !pError) {
                     if (bufSince == 0L) bufSince = nowT
@@ -658,6 +673,8 @@ fun PlayerScreen(req: PlayReq, zapList: List<Item>, liveAll: List<Item>, seriesI
         val l = object : Player.Listener {
             override fun onPlayerError(e: PlaybackException) {
                 pError = true
+                // Standbild weg, damit die normale Fehleransicht erscheint
+                if (hold.active) { hold.clear(); player.volume = wantedVolume() }
                 val status = httpStatusOf(e)
                 Diag.report("Wiedergabe: " + e.errorCodeName + (if (status > 0) " (HTTP $status)" else ""))
                 val decoder = e.errorCode == PlaybackException.ERROR_CODE_DECODER_INIT_FAILED ||
@@ -696,11 +713,12 @@ fun PlayerScreen(req: PlayReq, zapList: List<Item>, liveAll: List<Item>, seriesI
                 ) {
                     val now = System.currentTimeMillis()
                     stalls = StallLogic.add(stalls, now)
+                    AppSettings.noteStall()
                     if (StallLogic.tooMany(stalls, now)) {
-                        // Automatik: Puffer für die nächste Wiedergabe vergrößern (langsames Internet)
+                        // Automatik: Start- und Nachpuffer ab sofort vergrößern (langsames Internet), bis zum Beenden der App
                         val before = AppSettings.bufferLearned
-                        AppSettings.learnBuffer(ctx)
-                        if (AppSettings.bufferLearned != before) notice = "Ruckelt – Puffer wird beim nächsten Start größer"
+                        AppSettings.learnBuffer()
+                        if (AppSettings.bufferLearned != before) notice = "Ruckelt – Puffer wird größer"
                         if (!cur.live) switchSource("Ruckelt") else stalls = emptyList()
                     }
                 }
@@ -726,6 +744,8 @@ fun PlayerScreen(req: PlayReq, zapList: List<Item>, liveAll: List<Item>, seriesI
                 if (vf != null) showInfo(vf.width, vf.height)
             }
             override fun onVideoSizeChanged(videoSize: VideoSize) { showInfo(videoSize.width, videoSize.height) }
+            // Erstes Bild des neuen Senders ist zu sehen: Standbild entfernen
+            override fun onRenderedFirstFrame() { hold.clear() }
         }
         player.addListener(l)
         applyTrackPrefs()
@@ -738,6 +758,7 @@ fun PlayerScreen(req: PlayReq, zapList: List<Item>, liveAll: List<Item>, seriesI
             saveProgress()
             h.removeCallbacksAndMessages(null)
             player.removeListener(l)
+            hold.clear()
             player.release()
             // Puffer loslassen (eine laufende Aufnahme hält ihn weiter)
             LiveTimeshift.stop()
@@ -807,14 +828,21 @@ fun PlayerScreen(req: PlayReq, zapList: List<Item>, liveAll: List<Item>, seriesI
         liveEnds = 0
         // Aufnahme eines anderen Senders läuft weiter: das braucht eine zweite Verbindung zum Anbieter
         if (cur.live && Recorder.active.any { it.running && it.channelId != cur.itemId }) notice = "Aufnahme läuft weiter – dafür braucht dein Anbieter 2 gleichzeitige Verbindungen"
+        // Standbild: Kopie des letzten Bildes fertig, bevor der neue Sender den Decoder zurücksetzt (meist wenige ms)
+        hold.awaitCapture()
         val loaded = player.currentMediaItem?.localConfiguration?.uri?.toString()
         // Stalker-Portal: echte Adresse erst jetzt vom Portal holen (sie ist nur kurz gültig)
         val playUrl = if (StalkerLogic.isItem(cur.url)) StalkerApi.resolve(ctx, cur.url) else cur.url
         if (playUrl == null) {
             msg = "Das Portal hat keine Abspiel-Adresse geliefert. Später erneut versuchen."; buffering = false
+            hold.clear(); player.volume = wantedVolume()
             return@LaunchedEffect
         }
         resolvedUrl = playUrl
+        // Messung Kanalwechsel: nur Live-Sender, die jetzt wirklich neu geöffnet werden
+        val liveOpen = cur.live && cur.archive == null && (LiveTimeshift.wanted(playUrl) || Recorder.isRecording(cur.itemId) || loaded != playUrl)
+        if (liveOpen) ZapProbe.opened(playUrl) else ZapProbe.cancel()
+        loadCtl.live = cur.live && cur.archive == null
         if (cur.live && cur.archive == null && (LiveTimeshift.wanted(playUrl) || Recorder.isRecording(cur.itemId))) {
             // Live über den Puffer auf dem Gerät (Zurückspulen; bei laufender Aufnahme dieselbe Verbindung)
             if (!LiveTimeshift.start(ctx, player, playUrl)) {
@@ -826,6 +854,17 @@ fun PlayerScreen(req: PlayReq, zapList: List<Item>, liveAll: List<Item>, seriesI
             LiveTimeshift.stop()
             // Unbekanntes Format (z. B. ohne passendes Modul): Hinweis statt Absturz
             if (!openStream(player, playUrl, if (cur.startMs > 0) cur.startMs else 0L)) { msg = PlayerLogic.MSG_FORMAT; buffering = false }
+        } else hold.clear()   // nichts neu geladen: kein neues Bild zu erwarten
+        if (msg != null) hold.clear()
+        // Ton wieder an: der neue Sender ist geladen, der alte Ton ist damit weg (der Player arbeitet die Befehle der Reihe nach ab)
+        player.volume = wantedVolume()
+    }
+    // Standbild höchstens 4,5 s: danach erscheint die normale Ladeanzeige (Sicherung, falls kein neues Bild kommt)
+    LaunchedEffect(hold.token, hold.active) {
+        if (hold.active) {
+            delay(HoldLogic.TIMEOUT_MS)
+            // Ton nicht hier: den schaltet das Laden des neuen Senders wieder an (sonst käme bei langsamem Portal der alte Ton zurück)
+            hold.clear()
         }
     }
     LaunchedEffect(Unit) {
@@ -1082,6 +1121,7 @@ fun PlayerScreen(req: PlayReq, zapList: List<Item>, liveAll: List<Item>, seriesI
                     useController = false
                     setShowBuffering(PlayerView.SHOW_BUFFERING_NEVER)
                     this.player = player
+                    hold.attach(this)
                 }
             },
             update = { v ->
@@ -1131,7 +1171,8 @@ fun PlayerScreen(req: PlayReq, zapList: List<Item>, liveAll: List<Item>, seriesI
         )
 
         // ---------------------------------------------------------------- Meldungen
-        if (buffering && msg == null && !showGuide) {
+        // Während das letzte Bild gehalten wird keine Ladeanzeige (wie bei einem Receiver); nach der Zeitgrenze erscheint sie
+        if (buffering && msg == null && !showGuide && !hold.active) {
             Spinner(Accent2, Modifier.align(Alignment.Center).size(48.dp))
         }
         msg?.let { m ->

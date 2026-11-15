@@ -643,6 +643,13 @@ private fun PlayerPage(ctx: Context) {
     val bufNames = listOf("Automatisch", "Normal", "Groß", "Sehr groß")
     SelectRow("Puffer (bei langsamem Internet)", bufNames[AppSettings.bufferMode], bufNames, AppSettings.bufferMode) { AppSettings.setBufferMode(ctx, it) }
     Hint("Ein größerer Puffer lädt mehr Film im Voraus und verhindert Ruckeln bei schwacher Leitung; dafür dauert der Start etwas länger und es wird mehr Speicher gebraucht. „Automatisch“ beginnt normal und vergrößert den Puffer von selbst, wenn es mehrfach ruckelt (aktuell Stufe ${AppSettings.bufferLearned}). Gilt ab dem nächsten gestarteten Titel.")
+    Hint("Die gelernte Stufe beginnt bei jedem Start der App wieder bei 0 und sinkt nach 10 Minuten Wiedergabe ohne Ruckeln um eine Stufe.")
+    ToggleRow("Schneller Kanalwechsel", "Live TV startet schon mit 1 Sekunde Vorrat statt mit 1,5 bis 2,5 Sekunden. Der Sender ist schneller da, bei schwacher Leitung kann es am Anfang eher kurz ruckeln. Filme und Serien bleiben unverändert.", AppSettings.fastZap) {
+        AppSettings.setFastZap(ctx, it)
+    }
+    ToggleRow("Beim Umschalten letztes Bild halten", "Beim Senderwechsel in Live TV bleibt das letzte Bild stehen, bis der neue Sender da ist, statt schwarz zu werden. Der Ton ist sofort aus. Kommt nach 4,5 Sekunden kein Bild, erscheint die normale Ladeanzeige.", AppSettings.holdFrame) {
+        AppSettings.setHoldFrame(ctx, it)
+    }
     ToggleRow("Bildrate anpassen", "Passt die Bildwiederholrate des Fernsehers an den Film an (z. B. 24 Bilder), wenn der Fernseher das ohne Bildaussetzer kann. Bei Fire TV zusätzlich in den Geräteeinstellungen „Originale Bildrate anpassen“ prüfen.", AppSettings.autoFps) {
         AppSettings.setAutoFps(ctx, it)
     }
@@ -815,13 +822,14 @@ private fun DiagPage(ctx: Context, reload: () -> Unit) {
             Text(v, color = Color.White, fontSize = 16.sp, modifier = Modifier.widthIn(max = 640.dp))
         }
     }
+    ZapSection(ctx)
     // Hinweis vor den Knöpfen: Text unter dem letzten Knopf scrollt die Liste nie ins Bild (nichts darunter ist anwählbar)
     Hint("Der Bericht enthält keine Adressen, Benutzernamen oder Passwörter. Er wird nur in die Zwischenablage kopiert und nirgendwohin gesendet.")
     Hint("Auf dem Fernseher lässt sich die Zwischenablage oft nicht nutzen: Unter Einstellungen > Speicher > „Übertragung im WLAN starten“ kannst du den Bericht am Handy öffnen (Seite „Letzten Absturzbericht anzeigen“) und dort kopieren.")
     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         PillButton("Playlist neu laden", light = true, icon = AIcon.Refresh) { reload() }
         PillButton("Bericht kopieren") {
-            val text = lines.joinToString("\n") { it.first + ": " + it.second }
+            val text = lines.joinToString("\n") { it.first + ": " + it.second } + zapReport()
             runCatching {
                 val cm = ctx.getSystemService(android.content.ClipboardManager::class.java)
                 cm?.setPrimaryClip(android.content.ClipData.newPlainText("Mozaik Diagnose", text))

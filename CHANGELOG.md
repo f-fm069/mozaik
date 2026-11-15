@@ -18,6 +18,14 @@ Versionen bis 1.1 stammen aus IPVIO Stream.
 - Settings > General > "Movies and series straight to categories" (on by default); off restores the previous behaviour
 - The area's home page no longer shows "Popular movies/series" and "Recently watched"; "Continue watching" stays
 
+**Diagnostics**
+- Settings > Diagnostics > "Channel switching (measurement)": time from switching a Live TV channel to the first picture in milliseconds, split into steps (preparation, connection, first data, format detected, decoder ready, first picture, playing); last 20 switches with median and average per stream type (TS, HLS, other) and a reset button. Only times and the stream type are stored, on the device only
+
+**Live TV: faster channel switching**
+- The automatically learned buffer no longer stays large forever: it starts at the normal level every time the app starts, takes effect at once (also while zapping, not only for the next title) and drops one level after 10 minutes of playback without stuttering. Repeated stuttering still makes it grow, up to the previous limit (6.5 s start buffer)
+- Settings > Player > "Fast channel switching" (off by default): live channels start with 1 second buffered instead of 1.5 to 2.5 seconds; movies, series and recordings are unchanged
+- Settings > Player > "Keep last picture while switching" (on by default): when switching channels in Live TV the last picture of the old channel stays on screen until the new channel shows its first picture, instead of going black; the old sound stops at once. After 4.5 seconds without a new picture, or on an error, the normal loading or error view appears
+
 **Home**
 - "Recently added" is hidden by default (button on Movies/Series and the rows of that name); turn it back on in Settings > General > Show "Recently added"
 

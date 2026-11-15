@@ -78,7 +78,15 @@ object AppSettings {
     var clockBgOpacity by mutableIntStateOf(40)
     /** Puffer: 0 Automatisch (lernt bei Ruckeln), 1 Normal, 2 Groß, 3 Sehr groß. [bufferLearned] = von der Automatik gelernte Stufe 0..2. */
     var bufferMode by mutableIntStateOf(0)
+    /** Gilt nur bis zum Beenden der App (beim Start wieder [BufferLogic.LEARNED_AT_START]) und sinkt nach ruhiger Wiedergabe. */
     var bufferLearned by mutableIntStateOf(0)
+    /** Wiedergabezeit ohne Ruckler seit dem letzten Ruckler bzw. der letzten Änderung der Stufe (ms). */
+    @Volatile var bufferQuietMs = 0L
+        private set
+    /** „Schneller Kanalwechsel“: kürzerer Startpuffer nur für Live TV (Standard aus). */
+    var fastZap by mutableStateOf(false)
+    /** „Beim Umschalten letztes Bild halten“ (Standard an). */
+    var holdFrame by mutableStateOf(true)
     var clockPos by mutableIntStateOf(0)
     var clockOpacity by mutableIntStateOf(70)
     var clockSize by mutableIntStateOf(1)
@@ -118,7 +126,12 @@ object AppSettings {
         clockBg = p.getBoolean("clock_bg", true)
         clockBgOpacity = p.getInt("clock_bg_op", 40).coerceIn(10, 100)
         bufferMode = p.getInt("buf_mode", 0).coerceIn(0, 3)
-        bufferLearned = p.getInt("buf_learned", 0).coerceIn(0, 2)
+        // Gelernte Stufe wird nicht mehr gespeichert: jeder Start der App beginnt beim Standard
+        bufferLearned = BufferLogic.LEARNED_AT_START
+        bufferQuietMs = 0L
+        if (p.contains("buf_learned")) p.edit().remove("buf_learned").apply()
+        fastZap = p.getBoolean("fast_zap", false)
+        holdFrame = p.getBoolean("hold_frame", true)
         clockPos = p.getInt("clock_pos", 0).coerceIn(0, 3)
         clockOpacity = p.getInt("clock_opacity", 70).coerceIn(20, 100)
         clockSize = p.getInt("clock_size", 1).coerceIn(0, 2)
@@ -238,16 +251,35 @@ object AppSettings {
 
     /** Wechsel des Modus setzt die gelernte Stufe zurück. */
     fun setBufferMode(c: Context, mode: Int) {
-        bufferMode = mode.coerceIn(0, 3); bufferLearned = 0
-        prefs(c).edit().putInt("buf_mode", bufferMode).putInt("buf_learned", 0).apply()
+        bufferMode = mode.coerceIn(0, 3); bufferLearned = 0; bufferQuietMs = 0L
+        prefs(c).edit().putInt("buf_mode", bufferMode).apply()
     }
 
-    /** Die Automatik hat Ruckeln bemerkt: nächste Wiedergabe mit größerem Puffer. */
-    fun learnBuffer(c: Context) {
-        val n = BufferLogic.bump(bufferMode, bufferLearned)
-        if (n == bufferLearned) return
-        bufferLearned = n
-        prefs(c).edit().putInt("buf_learned", n).apply()
+    /** Die Automatik hat mehrfaches Ruckeln bemerkt: Start- und Nachpuffer ab sofort größer (nur bis zum Beenden der App). */
+    fun learnBuffer() {
+        bufferQuietMs = 0L
+        bufferLearned = BufferLogic.bump(bufferMode, bufferLearned)
+    }
+
+    /** Jeder Ruckler setzt die ruhige Zeit zurück. */
+    fun noteStall() { bufferQuietMs = 0L }
+
+    /** [ms] Wiedergabe ohne Ruckler: nach [BufferLogic.RELAX_MS] eine Stufe kleiner. */
+    fun notePlaying(ms: Long) {
+        if (bufferLearned <= 0) { bufferQuietMs = 0L; return }
+        bufferQuietMs += ms
+        val n = BufferLogic.relax(bufferLearned, bufferQuietMs)
+        if (n != bufferLearned) { bufferLearned = n; bufferQuietMs = 0L }
+    }
+
+    fun setHoldFrame(c: Context, on: Boolean) {
+        holdFrame = on
+        prefs(c).edit().putBoolean("hold_frame", on).apply()
+    }
+
+    fun setFastZap(c: Context, on: Boolean) {
+        fastZap = on
+        prefs(c).edit().putBoolean("fast_zap", on).apply()
     }
 
     fun setAutoFps(c: Context, on: Boolean) {

@@ -53,11 +53,38 @@ object BufferLogic {
     /** Nur die Automatik lernt; eine Stufe pro Aufruf, höchstens 2. */
     fun bump(mode: Int, learned: Int): Int = if (mode == 0) (learned + 1).coerceAtMost(2) else learned
 
+    /** Gelernte Stufe beim Start der App: immer Normal (die Leitung von gestern sagt nichts über heute). */
+    const val LEARNED_AT_START = 0
+
+    /**
+     * So lange muss ohne Ruckler abgespielt werden, bis die gelernte Stufe um eins sinkt: 10 Minuten.
+     * Wachsen braucht 3 Ruckler in 2 Minuten ([StallLogic.WINDOW]); 10 Minuten sind fünf solche Fenster ohne einen einzigen
+     * Ruckler. Kürzer (2–3 Minuten) würde bei wackligem WLAN hin- und herpendeln (kleiner → Ruckeln → größer),
+     * länger würde den Kanalwechsel unnötig lange langsam halten. Von der höchsten Stufe zurück auf Normal: 20 Minuten.
+     */
+    const val RELAX_MS = 10 * 60_000L
+
+    /** Stufe nach [quietMs] Wiedergabe ohne Ruckler: eine Stufe kleiner, sobald [RELAX_MS] erreicht ist. */
+    fun relax(learned: Int, quietMs: Long): Int = if (learned > 0 && quietMs >= RELAX_MS) learned - 1 else learned
+
+    /** Startpuffer für „Schneller Kanalwechsel“ (nur Live TV), entspricht dem Standard des Players. */
+    const val FAST_LIVE_START_MS = 1000
+
+    /**
+     * Startpuffer in ms: Grundwert des Geräts, mit „Schneller Kanalwechsel“ bei Live höchstens [FAST_LIVE_START_MS];
+     * je Stufe 2 s mehr (Ruckeln schützt also auch mit der schnellen Einstellung).
+     */
+    fun startMs(baseStart: Int, level: Int, fastLive: Boolean = false): Int =
+        (if (fastLive) minOf(baseStart, FAST_LIVE_START_MS) else baseStart) + 2000 * level.coerceIn(0, 2)
+
+    /** Puffer nach einem Ruckler (bevor es weitergeht) in ms: je Stufe 4 s mehr (höchste Stufe: + 8 s). */
+    fun rebufferMs(baseRebuffer: Int, level: Int): Int = baseRebuffer + 4000 * level.coerceIn(0, 2)
+
     /** [base] = (min ms, max ms, Start ms, Nachpuffern ms, Byte-Grenze oder -1). */
     fun scale(base: IntArray, level: Int): IntArray {
         if (level <= 0) return base
         val m = level + 1
         val bytes = if (base[4] > 0) minOf(base[4].toLong() * m, 64L * 1024 * 1024).toInt() else base[4]
-        return intArrayOf(base[0] * m, base[1] * m, base[2] + 2000 * level, base[3] + 4000 * level, bytes)
+        return intArrayOf(base[0] * m, base[1] * m, startMs(base[2], level), rebufferMs(base[3], level), bytes)
     }
 }

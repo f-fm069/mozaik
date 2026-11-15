@@ -83,16 +83,18 @@ fun LiveTab(liveAll: List<Item>, groupsAll: Map<String, List<Item>>, favsAll: Li
         }
         mutableStateOf(saved ?: if (favs.isNotEmpty()) FAV_CAT else "ALL")
     }
-    val favCats = CatFavs.list.filter { it in groups && it !in HiddenCats.list }
+    // Kategorien des Anbieters in der gewählten Sortierung, ohne ausgeblendete (gleiche Logik wie im Player)
+    val sortedCats = remember(groups, CatOrder.version) { CatOrder.sorted(CatOrder.LIVE, groups.keys.toList()) }
+    val visCats = LiveCatLogic.visible(sortedCats, CatFavs.list, HiddenCats.list)
+    val favCats = visCats.favs
     val myLists = ChannelLists.lists.toList()
     val byId = remember(live) { live.associateBy { it.id } }
     // Reihenfolge: Favoriten, eigene Senderlisten, „Neue Senderliste“, alle Sender, Kategorien
     // Aufnahmen (Runde 20): eigene Kategorie, sobald es welche gibt
     val recs = remember(Recorder.active.size, sel == "REC") { Recorder.list(ctx).map { Recorder.itemOf(it) } }
-    // Kategorien des Anbieters in der gewählten Sortierung, ohne ausgeblendete; „Ausgeblendet“ am Ende, wenn es welche gibt
-    val sortedCats = remember(groups, CatOrder.version) { CatOrder.sorted(CatOrder.LIVE, groups.keys.toList()) }
+    // „Ausgeblendet“ am Ende, wenn es welche gibt
     val names = (if (PlaylistStore.lists.size > 1) listOf("PL") else emptyList()) + listOf("GUIDE", FAV_CAT) + (if (recs.isNotEmpty()) listOf("REC") else emptyList()) + myLists.map { ChannelListLogic.key(it) } + listOf("NEW", "ALL") + favCats +
-        sortedCats.filter { it !in favCats && it !in HiddenCats.list } + (if (HiddenCats.list.any { it in groups }) listOf(HIDDEN_CAT) else emptyList())
+        visCats.rest + (if (HiddenCats.list.any { it in groups }) listOf(HIDDEN_CAT) else emptyList())
     val curList = ChannelLists.byKey(sel)
     val list = when {
         sel == FAV_CAT -> favs

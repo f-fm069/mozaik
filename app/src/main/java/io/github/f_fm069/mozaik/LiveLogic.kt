@@ -9,6 +9,27 @@ const val HIDDEN_CAT = "#HIDDEN"
 /** Sortier-Möglichkeiten für Kategorien, in der Reihenfolge von [CatOrderLogic] (Anbieter, A–Z, eigene). */
 val SORT_MODES = listOf("Anbieter-Reihenfolge", "A–Z", "Eigene Reihenfolge")
 
+/** Sichtbare Live-Kategorien: [favs] = Kategorie-Favoriten (oben), [rest] = übrige in der gewählten Sortierung. */
+data class LiveCats(val favs: List<String>, val rest: List<String>) {
+    val all: List<String> get() = favs + rest
+}
+
+/** Welche Live-Kategorien angezeigt werden (Live-TV-Hauptansicht und Player), ohne Android, testbar. */
+object LiveCatLogic {
+    /**
+     * [sorted] = Kategorien des Anbieters, schon nach [CatOrder] sortiert; [catFavs] = Kategorie-Favoriten in ihrer
+     * Reihenfolge; [hidden] = ausgeblendete Kategorien ([HiddenCats]). Ausgeblendete fallen überall weg,
+     * Favoriten nur, wenn es die Kategorie gibt.
+     */
+    fun visible(sorted: List<String>, catFavs: List<String>, hidden: Collection<String>): LiveCats {
+        val hid = hidden.toHashSet()
+        val present = sorted.toHashSet()
+        val favs = catFavs.filter { it in present && it !in hid }
+        val favSet = favs.toHashSet()
+        return LiveCats(favs, sorted.filter { it !in favSet && it !in hid })
+    }
+}
+
 /** Eigene Senderliste: Name und Sender in eigener Reihenfolge (Sender-IDs wie bei den Favoriten). */
 data class ChList(val id: Int, val name: String, val ids: List<String>)
 

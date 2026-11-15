@@ -108,11 +108,18 @@ fun ChannelOverlay(
     val byId = remember(liveAll) { liveAll.associateBy { it.id } }
     val groups = remember(liveAll) { liveAll.groupBy { it.group } }
     val favItems = Library.favs.mapNotNull { byId[it] }
-    val favCats = CatFavs.list.filter { it in groups }
-    val catNames = favCats + groups.keys.filter { it !in favCats }
+    // Gleiche Kategorien wie in der Live-TV-Hauptansicht: Sortierung aus CatOrder, ohne ausgeblendete (HiddenCats)
+    HiddenCats.init(ctx)
+    CatOrder.init(ctx)
+    val sortedCats = remember(groups, CatOrder.version) { CatOrder.sorted(CatOrder.LIVE, groups.keys.toList()) }
+    val visCats = LiveCatLogic.visible(sortedCats, CatFavs.list, HiddenCats.list)
+    val favCats = visCats.favs
+    val catNames = visCats.all
     // Eigene Senderlisten (angelegt im Live-TV-Bereich mit der Menü-Taste)
     val myLists = ChannelLists.lists.toList()
     val curList = ChannelLists.byKey(chanCat)
+    // Läuft ein Sender aus einer ausgeblendeten Kategorie, steht sie links nicht in der Liste: Fokus dann auf „Alle Sender“
+    val catFocusKey = if (chanCat == FAV_CAT || curList != null || chanCat in catNames) chanCat else "ALL"
     val chanList = when {
         chanCat == FAV_CAT -> favItems
         chanCat == "ALL" -> liveAll
@@ -142,17 +149,17 @@ fun ChannelOverlay(
                 Text("OK halten = Kategorie als Favorit", color = Muted, fontSize = 13.sp)
                 LazyColumn {
                     item {
-                        PCatRow("Favoriten", favItems.size, chanCat == FAV_CAT, true, if (chanCat == FAV_CAT) Modifier.focusRequester(catsFocus) else Modifier, null, { onChanCat(FAV_CAT) }) { onShowCats(false) }
+                        PCatRow("Favoriten", favItems.size, chanCat == FAV_CAT, true, if (catFocusKey == FAV_CAT) Modifier.focusRequester(catsFocus) else Modifier, null, { onChanCat(FAV_CAT) }) { onShowCats(false) }
                     }
                     items(myLists) { l ->
                         val k = ChannelListLogic.key(l)
-                        PCatRow(l.name, ChannelListLogic.resolve(l, byId).size, chanCat == k, false, if (chanCat == k) Modifier.focusRequester(catsFocus) else Modifier, null, { onChanCat(k) }, icon = AIcon.Lists, raw = true) { onShowCats(false) }
+                        PCatRow(l.name, ChannelListLogic.resolve(l, byId).size, chanCat == k, false, if (catFocusKey == k) Modifier.focusRequester(catsFocus) else Modifier, null, { onChanCat(k) }, icon = AIcon.Lists, raw = true) { onShowCats(false) }
                     }
                     item {
-                        PCatRow("Alle Sender", liveAll.size, chanCat == "ALL", false, if (chanCat == "ALL") Modifier.focusRequester(catsFocus) else Modifier, null, { onChanCat("ALL") }) { onShowCats(false) }
+                        PCatRow("Alle Sender", liveAll.size, chanCat == "ALL", false, if (catFocusKey == "ALL") Modifier.focusRequester(catsFocus) else Modifier, null, { onChanCat("ALL") }) { onShowCats(false) }
                     }
                     items(catNames) { g ->
-                        PCatRow(g, groups[g]?.size ?: 0, chanCat == g, g in CatFavs.list, if (chanCat == g) Modifier.focusRequester(catsFocus) else Modifier, { CatFavs.toggle(ctx, g) }, { onChanCat(g) }) { onShowCats(false) }
+                        PCatRow(g, groups[g]?.size ?: 0, chanCat == g, g in CatFavs.list, if (catFocusKey == g) Modifier.focusRequester(catsFocus) else Modifier, { CatFavs.toggle(ctx, g) }, { onChanCat(g) }) { onShowCats(false) }
                     }
                 }
             }

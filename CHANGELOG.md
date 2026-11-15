@@ -3,6 +3,8 @@
 Versionen bis 1.1 stammen aus IPVIO Stream.
 
 ## Unreleased
+
+## 1.1.0 – 2026-11-15
 **Categories** (ported from IPVIO Stream 1.4.2, GPL-3.0)
 - Hide categories in Live TV, Movies and Series: hold OK (or press the menu key) on a category and choose "Hide category"; hidden ones are listed under "Hidden" at the end and can be brought back from there
 - Sort categories: provider order, A–Z or your own order; move a category up, down or to the top from the same menu
@@ -29,7 +31,18 @@ Versionen bis 1.1 stammen aus IPVIO Stream.
 **Home**
 - "Recently added" is hidden by default (button on Movies/Series and the rows of that name); turn it back on in Settings > General > Show "Recently added"
 
-## 1.1
+**Look**
+- New accent colour indigo instead of orange; if you had kept the old orange as your own colour it switches to indigo once. The theme "Orange" can still be chosen in Settings > Design
+- New Mozaik logo (app icon, Android TV / Fire TV banner, logo in the app)
+- Quick tiles on the home page use the accent colour instead of one colour per area
+
+**Settings**
+- New settings start page: all 16 tiles in one grid without group headings, dark tiles with a coloured icon circle in rainbow colours (like the original IPVIO Stream)
+
+**Installation**
+- Downloader code `7525746` for Fire TV (Downloader app): it loads the newest `Mozaik.apk` from GitHub Releases. Install steps in the README, FAQ and release notes
+
+## IPVIO Stream 1.1 (before the fork)
 **Updates and your data**
 - In-app updates from GitHub Releases: the app checks once a day and shows "Update available" in the bell; one click downloads and installs
 - Release signing via `keystore.properties` (see docs/RELEASE.md) so updates install over the old version and keep history, favorites and settings

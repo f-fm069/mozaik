@@ -52,8 +52,9 @@ Users of an APK signed with a different key have to uninstall once (Settings > S
 4. On GitHub: **Releases > Draft a new release**
    - Tag: `v` + versionName, e.g. `v1.2` (the app compares this tag with its own version)
    - Title and notes: what is new (the first lines appear in the app)
-   - Attach both files and the `.sha256` file. `Mozaik.apk` must be there with exactly this name: the README and
-     Downloader link `…/releases/latest/download/Mozaik.apk` and the in-app update use it.
+   - Attach both files and the `.sha256` file. `Mozaik.apk` must be there with **exactly this name**: the README,
+     the Downloader code `7525746` (it points to `…/releases/latest/download/Mozaik.apk`) and the in-app update use it.
+   - Mention the Downloader code `7525746` in the install steps of the release notes.
    - **Publish release** (not "pre-release", the app ignores those)
 
 The download link in the README always points to the newest release:
@@ -65,7 +66,10 @@ The download link in the README always points to the newest release:
 - [ ] Build the signed release APK and save it as `Mozaik-<version>.apk` plus an identical copy `Mozaik.apk`
 - [ ] Calculate the SHA-256 checksum: `shasum -a 256 Mozaik-<version>.apk` (macOS/Linux) or `certutil -hashfile Mozaik-<version>.apk SHA256` (Windows)
 - [ ] Create the GitHub release (https://github.com/f-fm069/mozaik/releases/latest) with **both** APK files and the `.sha256` file, and add the SHA-256 checksum to the notes
+- [ ] The APK asset is named **exactly `Mozaik.apk`** (not `mozaik.apk`, not `Mozaik-<version>.apk`), otherwise the Downloader code and the in-app update break
+- [ ] The release notes contain the Downloader hint (code `7525746` for Fire TV)
 - [ ] Check that `https://github.com/f-fm069/mozaik/releases/latest/download/Mozaik.apk` downloads the new version (this is also the Downloader address)
+- [ ] After publishing, test the Downloader code `7525746` once on a Fire TV: it must download and install the new version
 
 ## 3. What users see
 

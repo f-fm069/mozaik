@@ -22,7 +22,7 @@ Mozaik ships without any API keys. Live TV, films and series work without one. F
 
 1. Download `Mozaik-1.0.0.apk` from this release.
 2. Verify the file (optional but recommended): the SHA-256 checksum is in `Mozaik-1.0.0.apk.sha256`.
-3. On Fire TV you can use the Downloader app. On Android TV, copy the file to the device (USB or file-manager app) and open it.
+3. On Fire TV, use the Downloader app: enter the Downloader code `7525746` (or `https://github.com/f-fm069/mozaik/releases/latest/download/Mozaik.apk`), let the APK download and choose Install. Downloader must be allowed to install apps from unknown sources (Settings > My Fire TV > Developer options > Install unknown apps). On Android TV / Google TV, use Downloader the same way or copy the file to the device (USB or file-manager app) and open it.
 4. Allow installing from unknown sources for the installing app when asked.
 
 Mozaik does not provide any content. Add your own playlist in the app. See [DISCLAIMER.md](DISCLAIMER.md).

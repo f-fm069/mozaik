@@ -34,4 +34,4 @@ Only on your device, in app-private storage. They are never sent anywhere except
 For your own modified version, please choose another name and logo.
 
 **How do I install the APK on Fire TV / Android TV?**
-Enable "Install unknown apps" for a file manager or the Downloader app, download the APK from the Releases page and open it.
+The easiest way is the Downloader app: allow it to install apps from unknown sources (on Fire TV: Settings > My Fire TV > Developer options > Install unknown apps), then enter the Downloader code `7525746` or `https://github.com/f-fm069/mozaik/releases/latest/download/Mozaik.apk` and install. Alternatively enable "Install unknown apps" for a file manager, download the APK from the Releases page and open it.

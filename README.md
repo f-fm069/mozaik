@@ -14,11 +14,20 @@ A free, open-source IPTV player for **Android TV, Google TV and Amazon Fire TV**
 
 **Download:** [Mozaik.apk (latest version)](https://github.com/f-fm069/mozaik/releases/latest/download/Mozaik.apk) · [all releases and checksums](https://github.com/f-fm069/mozaik/releases/latest)
 
-**Fire TV / Android TV with the Downloader app:** enter
-```
-https://github.com/f-fm069/mozaik/releases/latest/download/Mozaik.apk
-```
-Allow "Install unknown apps" for Downloader (or your file manager) when asked, then install. No account or registration needed.
+**Fire TV with the Downloader app (Downloader code `7525746`):**
+
+1. Install the app **Downloader** from the Amazon Appstore.
+2. In the Fire TV settings allow Downloader to install apps from unknown sources
+   (Settings > My Fire TV > Developer options > Install unknown apps > Downloader).
+3. Open Downloader and enter the code **`7525746`**, or this address:
+   ```
+   https://github.com/f-fm069/mozaik/releases/latest/download/Mozaik.apk
+   ```
+4. The APK downloads; choose **Install**.
+
+**Android TV / Google TV:** use the Downloader app the same way (code `7525746` or the address above) or a file manager, and allow "Install unknown apps" for it when asked.
+
+No account or registration needed.
 
 ## Features
 

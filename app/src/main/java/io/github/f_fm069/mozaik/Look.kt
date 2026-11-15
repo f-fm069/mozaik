@@ -29,8 +29,20 @@ object Look {
     /** Frühere Firmenfarbe (Orange) – nur noch, um gespeicherte eigene Farben einmalig umzustellen (Store, look_ver 7). */
     const val OLD_BRAND_ACCENT = 0xFF8A1F
     const val OLD_BRAND_ACCENT_HI = 0xFFB45C
-    /** Standard: Mozaik-Indigo (Thema an Stelle 0). */
-    const val DEFAULT_ACCENT = 0
+    /** Thema „Mozaik“ (Indigo, Stelle 0) – bis look_ver 7 der Standard. Bestehende Nutzer behalten es (Store, look_ver 8). */
+    const val MOZAIK_ACCENT = 0
+    /** Thema „Ozean“ (Stelle 2). Die Reihenfolge von ACCENTS nicht ändern, gespeicherte Nummern zeigen darauf. */
+    const val OCEAN_ACCENT = 2
+    /** Standard für neue Installationen und „Design zurücksetzen“: Ozean. */
+    const val DEFAULT_ACCENT = OCEAN_ACCENT
+    /** Aktuelle Stufe der einmaligen Design-Umstellungen in Store (Schlüssel look_ver). */
+    const val LOOK_VER = 8
+
+    /**
+     * Neuinstallation? Dann fehlen look_ver und look_accent noch ganz. Jede bisher gestartete Version hat look_ver
+     * gespeichert, deshalb bekommen nur neue Installationen den neuen Standard.
+     */
+    fun isFreshLook(hasLookVer: Boolean, hasAccent: Boolean): Boolean = !hasLookVer && !hasAccent
     /** Standard-Hintergrund: OLED-Schwarz (Index 2 in [BGS]). Die Reihenfolge von BGS nicht ändern, gespeicherte Nummern zeigen darauf. */
     const val DEFAULT_BG = 2
 

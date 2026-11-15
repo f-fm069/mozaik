@@ -144,6 +144,10 @@ object AppSettings {
         }
         searchHistory.clear()
         searchHistory.addAll((p.getString("search_hist", "") ?: "").split("\n").filter { it.isNotBlank() })
+        if (Look.isFreshLook(p.contains("look_ver"), p.contains("look_accent"))) {
+            // Neuinstallation (look_ver 8): Ozean als Standard. Die älteren Umstellungen unten sind dann überflüssig.
+            p.edit().putInt("look_accent", Look.DEFAULT_ACCENT).putInt("look_bg", Look.DEFAULT_BG).putInt("look_ver", Look.LOOK_VER).commit()
+        }
         if (p.getInt("look_ver", 1) < 2) {
             // Einmalig: Firmenfarben (Standardfarbe auf Navy) als neues Standard-Design setzen. Eigene Farbe bleibt erhalten.
             p.edit().putInt("look_accent", 0).putInt("look_bg", 0).putInt("look_ver", 2).commit()
@@ -171,7 +175,7 @@ object AppSettings {
             val acc = p.getInt("look_accent", 0)
             val newAcc = when {
                 acc == 13 -> Look.CUSTOM
-                acc == 12 -> if (p.getInt("look_custom_was", 0) == 1) Look.CUSTOM else Look.DEFAULT_ACCENT
+                acc == 12 -> if (p.getInt("look_custom_was", 0) == 1) Look.CUSTOM else Look.MOZAIK_ACCENT
                 else -> acc
             }
             val bg = p.getInt("look_bg", 0)
@@ -185,6 +189,11 @@ object AppSettings {
             val c2 = p.getInt("look_custom2", -1)
             if (c2 >= 0 && (c2 and 0xFFFFFF) == Look.OLD_BRAND_ACCENT_HI) e.putInt("look_custom2", -1)
             e.commit()
+        }
+        if (p.getInt("look_ver", 1) < 8) {
+            // Einmalig (look_ver 8): Ozean ist neuer Standard, aber nur für Neuinstallationen (siehe oben). Bestehende Nutzer
+            // behalten ihr Thema: Bei „Mozaik“ lässt sich nicht erkennen, ob es gewählt wurde, frühere Umstellungen haben 0 fest gespeichert.
+            p.edit().putInt("look_ver", 8).commit()
         }
         Look.accentIdx = p.getInt("look_accent", Look.DEFAULT_ACCENT).coerceIn(0, Look.ACCENTS.size)
         Look.custom = p.getInt("look_custom", Look.BRAND_ACCENT) and 0xFFFFFF
@@ -202,7 +211,7 @@ object AppSettings {
         Look.bgIdx = bg.coerceIn(0, Look.BGS.lastIndex)
         Look.motion = motion.coerceIn(0, 2)
         Look.uiScale = scale.coerceIn(0, Look.SCALES.lastIndex)
-        prefs(c).edit().putInt("look_accent", Look.accentIdx).putInt("look_custom", Look.custom).putInt("look_custom2", Look.custom2).putInt("look_bg", Look.bgIdx).putInt("look_ver", 7)
+        prefs(c).edit().putInt("look_accent", Look.accentIdx).putInt("look_custom", Look.custom).putInt("look_custom2", Look.custom2).putInt("look_bg", Look.bgIdx).putInt("look_ver", Look.LOOK_VER)
             .putInt("look_motion", Look.motion).putInt("look_scale", Look.uiScale).apply()
     }
 

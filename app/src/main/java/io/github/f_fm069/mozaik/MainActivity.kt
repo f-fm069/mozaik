@@ -175,6 +175,8 @@ private fun AppContent() {
     var cats by remember { mutableStateOf<CatReq?>(null) }
     var playing by remember { mutableStateOf<PlayReq?>(null) }
     var tab by remember { mutableStateOf(SettingsLogic.resolveStartTab(General.startTab, AppSettings.menuOrder.toList(), AppSettings.menuHidden.toList())) }
+    // Startseite der App ist Filme oder Serien: auch dann gleich die Kategorien zeigen (wie nach einem Klick im Menü)
+    remember { VodRows.open(VodRowsLogic.areaFor(tab, General.vodCats)); 0 }
     val gridState = remember(browse) { LazyGridState() }
     val states = listOf(
         rememberLazyListState(), rememberLazyListState(), rememberLazyListState(),
@@ -288,6 +290,8 @@ private fun AppContent() {
     fun goTab(id: Int) {
         if (id == MenuLogic.EPG) { openEpg(); return }
         tab = id; CatMemory.reset()
+        // Filme/Serien direkt zu den Kategorien (Einstellungen > Allgemein); sonst die Startseite des Bereichs
+        VodRows.open(VodRowsLogic.areaFor(id, General.vodCats))
         jumpTick++
     }
 

@@ -53,6 +53,11 @@ object General {
     var kinoPerRow by mutableIntStateOf(0)
     /** „Neu hinzugefügt“ zeigen: Knopf oben bei Filme/Serien und die gleichnamigen Reihen. Standard aus. */
     var showNew by mutableStateOf(false)
+    /**
+     * „Filme“ und „Serien“ in der Seitenleiste öffnen sofort die Kategorien als Posterreihen (mit „Weiterschauen“ oben)
+     * statt der Startseite des Bereichs. Standard an. Idee aus IPVIO Stream (W-002, GPL-3.0).
+     */
+    var vodCats by mutableStateOf(true)
     /** Vorschau beim Markieren eines Titels in den Reihen: 0 = Infos auf dem Poster (Karte bleibt, nichts verschiebt sich), 1 = breites Szenenbild (alt). */
     var previewStyle by mutableIntStateOf(0)
     /** Bilder der Film-/Serienkarten: 0 = Cover (Hochformat), 1 = Szenenbild (Querformat). */
@@ -128,6 +133,7 @@ object General {
         perRow = p.getInt("per_row", 0).let { if (it == 0) 0 else it.coerceIn(3, 14) }
         kinoPerRow = p.getInt("kino_per_row", 0).let { if (it == 0) 0 else it.coerceIn(3, 14) }
         showNew = p.getBoolean("show_new", false)
+        vodCats = p.getBoolean("vod_cats", true)
         cardArt = p.getInt("card_art", 0).coerceIn(0, 1)
         previewStyle = p.getInt("preview_style", 0).coerceIn(0, 1)
         Parental.init(c)
@@ -155,6 +161,7 @@ object General {
     fun setAspect(c: Context, v: Int) { defaultAspect = v.coerceIn(0, ASPECT_NAMES.lastIndex); prefs(c).edit().putInt("aspect", defaultAspect).apply() }
     fun setKinoPerRow(c: Context, v: Int) { kinoPerRow = if (v == 0) 0 else v.coerceIn(3, 14); prefs(c).edit().putInt("kino_per_row", kinoPerRow).apply() }
     fun setShowNew(c: Context, v: Boolean) { showNew = v; prefs(c).edit().putBoolean("show_new", v).apply() }
+    fun setVodCats(c: Context, v: Boolean) { vodCats = v; prefs(c).edit().putBoolean("vod_cats", v).apply() }
     fun setPerRow(c: Context, v: Int) { perRow = if (v == 0) 0 else v.coerceIn(3, 14); prefs(c).edit().putInt("per_row", perRow).apply() }
     fun setCardView(c: Context, size: Int, art: Int) {
         cardSize = size.coerceIn(0, 2); cardArt = art.coerceIn(0, 1)

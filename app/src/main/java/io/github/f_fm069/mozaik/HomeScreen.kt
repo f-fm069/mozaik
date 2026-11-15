@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -258,6 +259,28 @@ fun HomeScreen(
             onCategories(CatReq("$vodNoun · Kategorien", g, if (tab == 1) movieP else seriesP, SORT_NEW, kind = if (tab == 1) Kind.MOVIE else Kind.SERIES))
         }
     }
+    // Kategorienansicht (Posterreihen mit „Weiterschauen“ oben): „Filme“/„Serien“ in der Seitenleiste öffnen sie direkt,
+    // Zurück führt zur Startseite des Bereichs. Eigener Scroll-Zustand, damit die Startseite des Bereichs ihren behält.
+    val rowsOn = isVod && VodRows.tab == tab
+    val listSt = if (rowsOn) remember(tab, VodRows.gen) { VodRows.state(tab) } else states[tab]
+    val vodKind = if (tab == 2) Kind.SERIES else Kind.MOVIE
+    val vodG = if (tab == 2) seriesG else movieG
+    // Auch an catVer gebunden: eine nur umsortierte Map gilt als gleich (equals achtet nicht auf die Reihenfolge)
+    val rowGroups = remember(vodG, catVer, ignVer) { vodG.toList() }
+    // Nur Anbieter-Kategorien lassen sich ausblenden und verschieben (Auto-Genres nicht)
+    val rowsEdit = if (tab == 2) data.seriesG === data.seriesP else data.movieG === data.movieP
+    val rowsHidden = remember(ignVer, vodKind) { IgnoredGroups.hiddenGroups(vodKind).size }
+    val rowsShown = VodRows.shown[tab] ?: VodRowsLogic.initial(rowGroups.size)
+    // Viele Kategorien: erst die ersten aufbauen, weitere kurz bevor man beim Scrollen unten ankommt
+    LaunchedEffect(rowsOn, listSt, rowGroups.size) {
+        if (!rowsOn) return@LaunchedEffect
+        snapshotFlow { listSt.layoutInfo.let { (it.visibleItemsInfo.lastOrNull()?.index ?: -1) to it.totalItemsCount } }
+            .collect { (last, count) ->
+                val cur = VodRows.shown[tab] ?: VodRowsLogic.initial(rowGroups.size)
+                val next = VodRowsLogic.nextShown(cur, rowGroups.size, last, count)
+                if (next != cur) VodRows.shown[tab] = next
+            }
+    }
     val navTabs = if (!isVod) emptyList() else listOf(
         HeaderTab("Kategorien", AIcon.Categories, "tb:cats$tab") { openCats() },
         HeaderTab("Top bewertet", AIcon.Star, "tb:top$tab") { onBrowse(BrowseReq("Top bewertet · $vodNoun", vodTop, SORT_RATING)) }
@@ -279,7 +302,8 @@ fun HomeScreen(
             // Runde 20: Ansicht-Knopf entfällt (steht jetzt in Einstellungen > Ansicht), oben rechts nur Glocke und Profil
             showView = false,
             // Ohne großes Bild (noch keine Titelbilder): der erste Reiter ist das Ziel aus der Seitenleiste
-            firstIsContent = isVod && ready.isEmpty()
+            // In der Kategorienansicht bekommt die erste Reihe den Fokus, nicht der Reiter
+            firstIsContent = isVod && ready.isEmpty() && !rowsOn
         )
     }
     // Sender für die Reihe „Live TV“: Lieblingssender und zuletzt gesehene, sonst die ersten der Liste
@@ -320,7 +344,7 @@ fun HomeScreen(
             delay(1200)
             if (LastFocus.pending != null) {
                 LastFocus.pending = null
-                val st = states[tab]
+                val st = listSt
                 val atTop = (tab == 0 && st.firstVisibleItemIndex == 0) || (tab in 1..2 && st.firstVisibleItemIndex <= 1)
                 if (atTop) runCatching { ContentFocus.req.requestFocus() }
             }
@@ -382,20 +406,40 @@ fun HomeScreen(
         if (now - lastBack < 2500) exitApp()
         else { lastBack = now; android.widget.Toast.makeText(ctx, Lang.tr("Noch einmal Zurück drücken zum Beenden"), android.widget.Toast.LENGTH_SHORT).show() }
     }
+    // Kategorienansicht: Zurück führt zur Startseite des Bereichs (steht zuletzt, hat also Vorrang vor den anderen)
+    BackHandler(enabled = rowsOn && all.isNotEmpty()) {
+        scope.launch {
+            // Erst nach oben auf den ersten Reiter, dann umschalten: sonst verschwindet die markierte Karte mitsamt
+            // Fokus, und er fällt in die Seitenleiste
+            runCatching { listSt.scrollToItem(0) }
+            withFrameNanos { }
+            runCatching { HeaderFocus.firstTab.requestFocus() }
+            VodRows.tab = -1
+            // Nebenher: wartet, bis die Liste der Startseite aufgebaut ist, und darf den Fokus nicht aufhalten
+            launch { runCatching { states[tab].scrollToItem(0) } }
+            // Erst nach dem Umbau fragen: vorher hängt ContentFocus.req noch an der ersten Karte der Kategorienansicht
+            withFrameNanos { }
+            withFrameNanos { }
+            repeat(12) {
+                if (runCatching { ContentFocus.req.requestFocus() }.getOrDefault(false)) return@launch
+                delay(80)
+            }
+        }
+    }
 
     val resumeList = WatchStore.entries.mapNotNull { e -> byId[e.itemId]?.let { e to it } }
     val reload: () -> Unit = { PlaylistStore.savedUrl(ctx)?.let { u -> scope.launch { PlaylistStore.load(ctx, u, false) } } }
 
     // Runde 17b (Cinematic Remake): Hintergrund und Infos folgen dem markierten Titel, sobald das große Bild weggescrollt ist
     val bbTab = tab in 0..2
-    val bbState = states[tab.coerceIn(0, states.lastIndex)]
+    val bbState = listSt
     // Runde 18: Auch wenn das große Bild noch teilweise zu sehen ist (z. B. erste Reihe „Beliebte Serien“), zeigt der Hintergrund
     // die Infos des markierten Titels – und das große Bild (Slideshow) pausiert.
     // Infos oben nur bei den normalen Titelreihen (ab „Top 10 heute“ bzw. „Neu hinzugefügt“), nicht bei Kacheln, Live TV, Weiterschauen,
     // Meine Liste und Zuletzt geschaut. Und nur, wenn die Reihe tief genug steht, dass sie die Infos nicht überdeckt.
     val listTop = remember { floatArrayOf(0f) }
-    val noBb = remember { setOf("hero", "top", "tiles", "resume", "chnow", "hero1", "hero2", "top1", "top2", "res1", "res2", "wl1", "wl2", "hr1", "hr2", "hint1", "hint2") }
-    val bbOn by remember(tab) {
+    val noBb = remember { setOf("hero", "top", "tiles", "resume", "chnow", "hero1", "hero2", "top1", "top2", "res1", "res2", "wl1", "wl2", "hr1", "hr2", "hint1", "hint2") + VOD_ROWS_NO_BB }
+    val bbOn by remember(tab, bbState) {
         derivedStateOf {
             if (!bbTab || !Billboard.cardFocus || Billboard.focused == null) return@derivedStateOf false
             val co = Billboard.focusCo
@@ -414,7 +458,7 @@ fun HomeScreen(
     // 17c: erst nach kurzem Verweilen wechseln (beim schnellen Durchblättern werden keine großen Bilder geladen)
     LaunchedEffect(Billboard.focused) { if (bbItem != null) delay(450); bbItem = Billboard.focused }
     val bbA by animateFloatAsState(if (bbOn && bbItem != null) 1f else 0f, tween(if (Look.motion == 0) 0 else 520), label = "bbA")
-    val pivotSpec = remember(tab) { PivotSpec(0.5f) { states[tab.coerceIn(0, states.lastIndex)] } }
+    val pivotSpec = remember(tab, listSt) { PivotSpec(0.5f) { listSt } }
     Box(Modifier.fillMaxSize()) {
         if (bbTab && bbA > 0.01f) BillboardBackdrop(bbItem, Modifier.fillMaxSize().graphicsLayer { alpha = bbA })
         if (bbTab && bbA > 0.01f) bbItem?.let { bi ->
@@ -459,12 +503,12 @@ fun HomeScreen(
                 // Die anderen Tabs brauchen den großen Abstand, damit die markierte Reihe in der unteren Hälfte stehen bleibt.
                 val settingsView = tab !in listOf(0, 1, 2, MenuLogic.FAVS, MenuLogic.MYLIST, MenuLogic.VERLAUF)
                 CompositionLocalProvider(
-                    LocalCardGrid provides grid, LocalScrollTop provides { states[tab].scrollToItem(0) },
+                    LocalCardGrid provides grid, LocalScrollTop provides { listSt.scrollToItem(0) },
                     androidx.compose.foundation.gestures.LocalBringIntoViewSpec provides (if (bbTab) pivotSpec else SmoothSpec)
                 ) { LazyColumn(Modifier.fillMaxSize().onGloballyPositioned { listTop[0] = it.positionInRoot().y }.drawWithContent {
                     // Solange die Infos oben stehen (auch beim Ausblenden): alles über der markierten Reihe weg, das große Bild immer.
                     val ct = if (bbTab && bbA > 0.01f) {
-                        val li = states[tab].layoutInfo
+                        val li = listSt.layoutInfo
                         val co = Billboard.focusCo
                         var edge = size.height * 0.5f - dpx(140).toPx()
                         if (Billboard.focused != null && co != null && co.isAttached) {
@@ -476,7 +520,7 @@ fun HomeScreen(
                         edge.coerceIn(0f, size.height * 0.75f)
                     } else 0f
                     if (ct > 1f) clipRect(top = ct) { this@drawWithContent.drawContent() } else drawContent()
-                }, state = states[tab], contentPadding = PaddingValues(bottom = if (settingsView) 24.dp else dpx(420))) {
+                }, state = listSt, contentPadding = PaddingValues(bottom = if (settingsView) 24.dp else dpx(420))) {
                     when (tab) {
                         0 -> {
                             if (ready.isNotEmpty()) item(key = "hero") { Hero(ready.toList(), heroH, true, onOpen, onPlayNow, header, { heroScroll(states[0]) }) { scope.launch { states[0].animateScrollToItem(0) } } }
@@ -514,7 +558,13 @@ fun HomeScreen(
                             }
                             if (movies.isEmpty() && series.isEmpty()) item { EmptyHint("Diese Playlist enthält keine Filme oder Serien. Live TV findest du links.") }
                         }
-                        1, 2 -> {
+                        1, 2 -> if (rowsOn) {
+                            vodCatRows(
+                                tab, vodNoun, header, resumeList.filter { it.second.kind == vodKind },
+                                rowGroups, rowsShown, rowsHidden, rowsEdit, cardW, ContentFocus.req,
+                                onOpen, onResume
+                            ) { g, l -> onBrowse(BrowseReq(g, l, SORT_NEW)) }
+                        } else {
                             val isM = tab == 1
                             val base = if (isM) movies else series
                             val top = if (isM) topM else topS
@@ -523,23 +573,12 @@ fun HomeScreen(
                             val groups = if (isM) movieG else seriesG
                             if (ready.isNotEmpty()) item(key = "hero$tab") { Hero(ready.toList(), heroH, false, onOpen, onPlayNow, header, { heroScroll(states[tab]) }) { scope.launch { states[tab].animateScrollToItem(0) } } }
                             else item(key = "top$tab") { header(Modifier) }
-                            // Beliebt (im Trend, sonst top bewertet) direkt unter dem großen Bild. Erste Reihe:
-                            // „Alle anzeigen“ hoch = Profil oben rechts, links = „Zur Liste“ im Bild
-                            val tt = trendItems.filter { it.kind == kind }
-                            val pop = if (tt.size >= 5) tt else top
-                            if (pop.size >= 3) item(key = "pop$tab") {
-                                ItemsRow(if (isM) "Beliebte Filme" else "Beliebte Serien", pop, cardW, onOpen,
-                                    upReq = HeaderFocus.profile, leftReq = if (ready.isNotEmpty()) HeroFocus.second else null) {
-                                    onBrowse(BrowseReq((if (isM) "Beliebte Filme" else "Beliebte Serien"), pop, SORT_PLAYLIST))
-                                }
-                            }
-                            if (ready.isEmpty() && pop.size < 3) item(key = "hint$tab") { EmptyHint("Oben findest du alle $noun, Neuheiten, Top bewertet und Kategorien.") }
+                            // „Beliebte …“ und „Zuletzt geschaut“ gibt es hier nicht mehr; Weiterschauen steht direkt unter dem großen Bild
+                            if (ready.isEmpty()) item(key = "hint$tab") { EmptyHint("Oben findest du alle $noun, Neuheiten, Top bewertet und Kategorien.") }
                             val rl = resumeList.filter { it.second.kind == kind }
                             if (rl.isNotEmpty()) item(key = "res$tab") { ResumeRow(rl, cardW, onResume) }
                             val wl = watchList.filter { it.kind == kind }
                             if (wl.isNotEmpty()) item(key = "wl$tab") { ItemsRow("Meine Liste", wl, cardW, onOpen) { onBrowse(BrowseReq("Meine Liste · $noun", wl, SORT_PLAYLIST)) } }
-                            val recent = hist.filter { it.kind == kind }
-                            if (recent.isNotEmpty()) item(key = "hr$tab") { ItemsRow("Zuletzt geschaut", recent, cardW, onOpen) { onBrowse(BrowseReq("Zuletzt geschaut · $noun", recent, SORT_PLAYLIST)) } }
                             if (base.isEmpty()) item { EmptyHint("Keine $noun in dieser Playlist") }
                             if (General.showNew && base.isNotEmpty()) item(key = "new$tab") { ItemsRow("Neu hinzugefügt", base.takeLast(40).reversed(), cardW, onOpen) { onBrowse(BrowseReq("Neu hinzugefügt · $noun", base, SORT_NEW)) } }
                             if (top.size >= 8) item(key = "best$tab") { ItemsRow("Top bewertet", top, cardW, onOpen) { onBrowse(BrowseReq("Top bewertet · $noun", top, SORT_RATING)) } }
@@ -634,6 +673,10 @@ fun HomeScreen(
             // Design-Einstellungen: Vorschau steht fest oben rechts, die Einstellungen scrollen darunter weg
             if (DesignPreview.visible) DesignPreviewPanel(Modifier.align(Alignment.TopEnd).padding(top = dpx(84), end = DS.PageX))
         }
+        if (rowsOn) {
+            val names = remember(if (tab == 2) seriesP else movieP) { (if (tab == 2) seriesP else movieP).keys.toList() }
+            VodRowsMenus(ctx, vodKind, names, remember(rowGroups) { rowGroups.map { it.first } })
+        }
         if (picker) {
             BackHandler { picker = false }
             ProfilePicker { id -> picker = false; if (id != Profiles.active) Profiles.switchTo(ctx, id) }
@@ -647,7 +690,7 @@ fun HomeScreen(
 }
 
 @Composable
-private fun EmptyHint(text: String) {
+internal fun EmptyHint(text: String) {
     // Runde 17: Hinweis mit Symbol, größer und ruhiger (statt kleiner grauer Zeile)
     Row(Modifier.padding(horizontal = DS.PageX, vertical = dpx(20)), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(dpx(14))) {
         AppIcon(AIcon.Info, Accent2, size = dpx(26))
@@ -660,10 +703,11 @@ object PillMemory {
 }
 
 @Composable
-private fun ItemsRow(
+internal fun ItemsRow(
     title: String, list: List<Item>, cardW: Int, onOpen: (Item) -> Unit,
     firstReq: FocusRequester? = null, style: Int = -1,
-    upReq: FocusRequester? = null, leftReq: FocusRequester? = null, onAll: () -> Unit
+    upReq: FocusRequester? = null, leftReq: FocusRequester? = null,
+    onMenu: (() -> Unit)? = null, onAll: () -> Unit
 ) {
     // Nach „Alle anzeigen“ und Zurück: Fokus wieder auf den Link dieser Reihe
     val key = NavState.tab.toString() + "|" + title
@@ -679,11 +723,11 @@ private fun ItemsRow(
     // Bildart aus „Ansicht“ (Standard: Cover); Top 10 immer Cover
     val st = if (style >= 0) style else if (General.cardArt == 1) CARD_LAND else CARD_POSTER
     CardRow(title, list, st, onOpen, { PillMemory.key = key; onAll() }, RowStates.get("${NavState.tab}|$title"), headerReq, firstCard,
-        upReq = upReq, leftReq = leftReq)
+        upReq = upReq, leftReq = leftReq, onMenu = onMenu)
 }
 
 @Composable
-private fun ResumeRow(list: List<Pair<Entry, Item>>, cardW: Int, onResume: (Entry, Item) -> Unit) {
+internal fun ResumeRow(list: List<Pair<Entry, Item>>, cardW: Int, onResume: (Entry, Item) -> Unit, firstReq: FocusRequester? = null) {
     val ctx = LocalContext.current
     Column {
         val g = LocalCardGrid.current
@@ -696,7 +740,7 @@ private fun ResumeRow(list: List<Pair<Entry, Item>>, cardW: Int, onResume: (Entr
             contentPadding = PaddingValues(start = RowPadX, end = RowPadX, top = dpx(12), bottom = dpx(10)),
             horizontalArrangement = Arrangement.spacedBy(g.gap)
         ) {
-            items(list) { pair ->
+            itemsIndexed(list) { i, pair ->
                 val e = pair.first
                 val item = pair.second
                 val se = if (e.season > 0 || e.ep > 0) e.season to e.ep else ResumeLogic.seasonEp(e.title)
@@ -710,7 +754,8 @@ private fun ResumeRow(list: List<Pair<Entry, Item>>, cardW: Int, onResume: (Entr
                 }
                 WideCard(
                     item, sub, if (e.dur > 0) (e.pos.toFloat() / e.dur).coerceIn(0f, 1f) else 0f,
-                    Modifier.width(g.wide).restoreFocus(item.id).favKeys {
+                    Modifier.width(g.wide).restoreFocus(item.id)
+                        .then(if (i == 0 && firstReq != null) Modifier.focusRequester(firstReq) else Modifier).favKeys {
                         WatchStore.remove(ctx, e.itemId)
                         android.widget.Toast.makeText(ctx, Lang.tr("Aus „Weiterschauen“ entfernt"), android.widget.Toast.LENGTH_SHORT).show()
                     }

@@ -10,6 +10,14 @@ Versionen bis 1.1 stammen aus IPVIO Stream.
 - Settings > Genres & categories: search categories (e.g. "EU | DE"), switch many at once and save them together with "Apply"; ignore whole groups by the provider's tag ("TR |", "[EN]") without reloading the playlist; "Turn all back on"
 - Switching many categories no longer stutters: the list is filtered in the background
 
+**Movies and series straight to categories** (idea and setting from IPVIO Stream 1.4.2, GPL-3.0; poster rows are new in Mozaik)
+- "Movies" and "Series" in the menu open the categories right away: "Continue watching" on top (only movies or only series, hidden when nothing is started, hold OK to remove), below it every category as a row of posters with "Show all"
+- The rows follow the category settings: hidden and ignored categories are left out, the chosen order applies (provider, A–Z, own order); hold OK or press the menu key on a row to hide or move it, "Hidden categories" at the end brings them back
+- Many categories: the first 15 rows are built at once, more follow while scrolling
+- Back leads to the area's home page; "Categories" at the top still opens the category list
+- Settings > General > "Movies and series straight to categories" (on by default); off restores the previous behaviour
+- The area's home page no longer shows "Popular movies/series" and "Recently watched"; "Continue watching" stays
+
 **Home**
 - "Recently added" is hidden by default (button on Movies/Series and the rows of that name); turn it back on in Settings > General > Show "Recently added"
 

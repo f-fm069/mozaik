@@ -39,6 +39,7 @@ Allow "Install unknown apps" for Downloader (or your file manager) when asked, t
 - "Top rated" and sorting by rating use IMDb first, then Rotten Tomatoes, TMDB and finally the provider's rating
 - Provider categories or automatic genres, search with typo tolerance
 - Hide and sort categories in Live TV, Movies and Series (hold OK on a category); the home rows follow your choice
+- "Movies" and "Series" open straight to the categories as poster rows with "Continue watching" on top (Settings > General, on by default); Back leads to the area's home page
 - Detail page with resume, trailer, my list, favourites, choice of source/quality
 - Series: seasons on the left, episodes on the right with picture, rating and description; sections and "go to episode" for very long series
 

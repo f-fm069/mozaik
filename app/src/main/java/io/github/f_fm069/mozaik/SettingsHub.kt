@@ -486,6 +486,11 @@ private fun GeneralPage(ctx: Context) {
         "Zeigt den Knopf „Neu hinzugefügt“ oben bei Filmen und Serien und die gleichnamigen Reihen auf den Startseiten.",
         General.showNew
     ) { General.setShowNew(ctx, it) }
+    ToggleRow(
+        "Filme und Serien direkt zu den Kategorien",
+        "„Filme“ und „Serien“ im Menü öffnen sofort die Kategorien statt der Startseite des Bereichs. Zurück führt zur Startseite des Bereichs.",
+        General.vodCats
+    ) { General.setVodCats(ctx, it) }
     ToggleRow("Letzten Sender beim Start abspielen", "Wenn du zuletzt Live TV gesehen hast, läuft dieser Sender direkt nach dem Start.", General.resumeLive) { General.setResumeLive(ctx, it) }
     ToggleRow("Letzten Film / letzte Serie beim Start fortsetzen", "Wenn du zuletzt einen Film oder eine Serie gesehen hast, läuft sie nach dem Start an der gemerkten Stelle weiter (bei einer fertigen Folge mit der nächsten).", General.resumeVod) { General.setResumeVod(ctx, it) }
 

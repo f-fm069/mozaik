@@ -246,6 +246,8 @@ fun RowTitle(
     upReq: FocusRequester? = null, leftReq: FocusRequester? = null,
     /** Zustand der Kartenreihe darunter: ist die erste Karte verschoben/nicht aufgebaut, wird erst an den Anfang gescrollt */
     rowState: LazyListState? = null,
+    /** Langes OK / Menütaste auf „Alle anzeigen“ (Kategorienansicht: Menü zum Ausblenden und Verschieben). */
+    onMenu: (() -> Unit)? = null,
     onAll: (() -> Unit)?
 ) {
     Row(
@@ -298,6 +300,8 @@ fun RowTitle(
                         else false
                     }
                     .trackFocus()
+                    // Kategorienansicht: langes OK / Menütaste öffnet das Menü der Reihe (Ausblenden, Verschieben)
+                    .then(if (onMenu != null) Modifier.menuKeys(onMenu = onMenu, onLong = onMenu) else Modifier)
                     .clickable(onClick = onAll)
                     .padding(horizontal = dpx(10), vertical = dpx(4)),
                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(dpx(10))
@@ -493,7 +497,9 @@ const val CARD_TOP10 = 2
 fun CardRow(
     title: String, list: List<Item>, style: Int, onOpen: (Item) -> Unit, onAll: (() -> Unit)?,
     state: LazyListState, linkReq: FocusRequester = remember { FocusRequester() }, firstCard: FocusRequester = remember { FocusRequester() },
-    raw: Boolean = false, upReq: FocusRequester? = null, leftReq: FocusRequester? = null
+    raw: Boolean = false, upReq: FocusRequester? = null, leftReq: FocusRequester? = null,
+    /** Langes OK / Menütaste auf einer Karte oder „Alle anzeigen“ (Kategorienansicht: Ausblenden, Verschieben). */
+    onMenu: (() -> Unit)? = null
 ) {
     val g = LocalCardGrid.current
     val live = list.firstOrNull()?.kind == Kind.LIVE
@@ -501,7 +507,7 @@ fun CardRow(
     var cur by remember { mutableIntStateOf(-1) }
     CenterFollow(state, cur)
     Column {
-        RowTitle(title, linkReq, firstCard, raw = raw, upReq = upReq, leftReq = leftReq, rowState = state, onAll = onAll)
+        RowTitle(title, linkReq, firstCard, raw = raw, upReq = upReq, leftReq = leftReq, rowState = state, onMenu = onMenu, onAll = onAll)
         // Oben/unten genug Luft für die Vergrößerung beim Markieren (sonst wird das Cover angeschnitten)
         // Hat die Reihe den Fokus, treten die anderen
         // Karten zurück (LocalRowFocus); seitlich gilt das ruhige Scrollen (SmoothSpec), nicht das Festhalten der Startseite.
@@ -520,6 +526,7 @@ fun CardRow(
                     if (onAll != null && ev.type == KeyEventType.KeyDown && ev.key == Key.DirectionUp) runCatching { linkReq.requestFocus() }.getOrDefault(false)
                     else false
                 }.onFocusChanged { st -> if (st.hasFocus) cur = i }
+                    .then(if (onMenu != null) Modifier.menuKeys(onMenu = onMenu, onLong = onMenu) else Modifier)
                 when {
                     it.kind == Kind.LIVE -> ChannelNowCard(it, track.width(g.chan).then(fr)) { onOpen(it) }
                     style == CARD_LAND -> LandscapeCard(it, track.width(g.land).restoreFocus(it.id).then(fr)) { onOpen(it) }

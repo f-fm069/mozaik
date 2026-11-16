@@ -5,9 +5,12 @@ Versionen bis 1.1 stammen aus IPVIO Stream.
 ## Unreleased
 
 ## 1.1.1 – 2026-11-15
-- Live TV: hidden categories are now also respected in the channel list inside the player.
-- Playlists: categories can now be switched on and off per type (Live TV, Movies, Series), with search, "All on/off" and channel count. Hiding in Live TV and in Settings now uses the same store; earlier settings are carried over.
-- New installs start with the Ocean colour theme. Existing installs keep their theme.
+- Live TV: hidden categories are now also left out of the channel list inside the player; the player uses the same order as the Live TV list.
+- Playlists: categories can be switched on and off per type (Live TV, Movies, Series), with search, "All on/off" and channel count. Hiding in Live TV and in Settings now uses the same store; earlier settings are carried over.
+- Live TV: a category can be moved with Up/Down ("Move with Up/Down"); new menu entry "Move to end". Move up/down/to top now only work among visible categories.
+- Live TV: Back in the channel list goes to the selected category; OK and Right open the channel list more reliably on Fire TV (focus fix).
+- Colour theme: new installs start with Ocean; existing installs keep their theme.
+- Look: TV banner with a soft radial gradient; context menus are fully opaque so text behind no longer shows through.
 
 ## 1.1.0 – 2026-11-15
 **Categories** (ported from IPVIO Stream 1.4.2, GPL-3.0)

@@ -1,12 +1,15 @@
 # Mozaik 1.1.1
 
-Mozaik 1.1.1 fixes hidden categories in the player, makes category filtering easier and sets a new default colour theme.
+Mozaik 1.1.1 fixes hidden categories in the player, makes category filtering and ordering easier, improves focus on Fire TV and sets a new default colour theme.
 
 ## What's new
 
-- **Live TV:** hidden categories are now also left out of the channel list inside the player.
-- **Playlists:** categories can now be switched on and off per type (Live TV, Movies, Series), with search, "All on/off" and channel count. Hiding in Live TV and in Settings now uses the same store; your earlier settings are carried over.
+- **Live TV:** hidden categories are now also left out of the channel list inside the player. The player uses the same order as the Live TV list.
+- **Playlists:** categories can be switched on and off per type (Live TV, Movies, Series), with search, "All on/off" and channel count. Hiding in Live TV and in Settings now uses the same store; your earlier settings are carried over.
+- **Move categories:** in Live TV a category can be moved with Up/Down ("Move with Up/Down"). New menu entry "Move to end". Move up/down/to top now only work among visible categories.
+- **Live TV on Fire TV:** Back in the channel list goes to the selected category; OK and Right open the channel list more reliably.
 - **Colour theme:** new installs start with Ocean. Existing installs keep their theme.
+- **Look:** TV banner with a soft radial gradient; context menus are fully opaque, so text behind no longer shows through.
 
 The full list is in [CHANGELOG.md](../../CHANGELOG.md).
 
@@ -31,7 +34,7 @@ Mozaik does not provide any content. Add your own playlist in the app. See [DISC
 
 Verify the file (optional but recommended): the SHA-256 checksum is in `Mozaik.apk.sha256`.
 
-SHA-256 of `Mozaik.apk`: `4265c7a0596fb0b7384424c7afa27c6a63a3f28326b072402386e74b57d641c8`
+SHA-256 of `Mozaik.apk`: `7c6bca4d6774df1c8563d354969b942f48d2801bde20f14c253130c57de2c7b7`
 
 Signing certificate: SHA-256 `4efe05232eaecae57fe8c57307b5572ec4cb0bd7bf63a17fd7e1ea8160714128` (same as 1.0.0)
 

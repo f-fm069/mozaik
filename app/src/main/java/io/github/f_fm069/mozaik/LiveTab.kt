@@ -131,12 +131,14 @@ fun LiveTab(liveAll: List<Item>, groupsAll: Map<String, List<Item>>, favsAll: Li
     val restoreId = remember { LastFocus.pending }
     LaunchedEffect(Unit) {
         val id = restoreId ?: return@LaunchedEffect
-        val i = list.indexOfFirst { it.id == id }
+        val i = LiveBackLogic.restoreIndex(list.map { it.id }, id)
         if (i < 0) return@LaunchedEffect
+        // Der zuletzt gesehene Sender; gehört er nicht zur gezeigten Liste, der erste (der Fokus bleibt in der Senderliste)
+        val req = if (list[i].id == id) restoreReq else firstChan
         runCatching { chanState.scrollToItem(maxOf(i - 2, 0)) }
         repeat(15) {
             kotlinx.coroutines.delay(80)
-            if (runCatching { restoreReq.requestFocus() }.isSuccess) { LastFocus.pending = null; return@LaunchedEffect }
+            if (runCatching { req.requestFocus() }.isSuccess) { LastFocus.pending = null; return@LaunchedEffect }
         }
     }
     var askDelete by remember { mutableStateOf(false) }
@@ -163,6 +165,28 @@ fun LiveTab(liveAll: List<Item>, groupsAll: Map<String, List<Item>>, favsAll: Li
     fun finishAdd() { val id = addTo; addTo = null; if (id != null) sel = ChannelListLogic.PREFIX + id }
     androidx.activity.compose.BackHandler(enabled = addList != null) { finishAdd() }
 
+    // Zurück in der Senderliste (rechts) führt zur gewählten Kategorie (links), wie die Pfeiltaste links.
+    // Verschiebe-Modus und „Sender hinzufügen“ haben Vorrang (siehe LiveBackLogic).
+    var inChannels by remember { mutableStateOf(false) }
+    val catReq = remember { FocusRequester() }
+    val backAction = LiveBackLogic.action(moving != null, addList != null, inChannels)
+    val focusRowKey = LiveBackLogic.focusRow(names, sel)
+    androidx.activity.compose.BackHandler(enabled = backAction == LiveBackLogic.Action.ToCategories) {
+        runCatching { catReq.requestFocus() }
+    }
+    // In die Senderliste (OK / Pfeil rechts): ist der erste Sender nicht aufgebaut (Liste weit gescrollt), erst nach oben
+    // scrollen und dann nochmal versuchen, damit der Fokus nicht verloren geht (Fire TV).
+    fun enterChannels() {
+        if (runCatching { firstChan.requestFocus() }.isSuccess) return
+        plScope.launch {
+            runCatching { chanState.scrollToItem(0) }
+            repeat(4) {
+                withFrameNanos { }
+                if (runCatching { firstChan.requestFocus() }.isSuccess) return@launch
+            }
+        }
+    }
+
     // Ohne eigenes Fenster und ohne Tastatur: die Liste wird gleich mit Standardnamen angelegt (umbenennen geht jederzeit)
     fun newList(first: String?) {
         val id = ChannelLists.create(ctx, Lang.tr("Senderliste " + (myLists.size + 1)), first)
@@ -183,7 +207,7 @@ fun LiveTab(liveAll: List<Item>, groupsAll: Map<String, List<Item>>, favsAll: Li
                     val ml = ChannelLists.byKey(n)
                     if (n == "GUIDE") {
                         // TV-Guide wie im Entwurf: startet den zuletzt gesehenen (sonst ersten) Sender der Auswahl und öffnet den Guide
-                        CatRow("TV-Guide", -1, false, Modifier, onFocus = {}, onRight = { runCatching { firstChan.requestFocus() } }, onFav = {}, icon = AIcon.Grid) {
+                        CatRow("TV-Guide", -1, false, Modifier, onFocus = {}, onRight = { enterChannels() }, onFav = {}, icon = AIcon.Grid) {
                             val src = list.ifEmpty { live }
                             val ch = History.ids.firstNotNullOfOrNull { id -> src.firstOrNull { it.id == id } } ?: src.firstOrNull()
                             if (ch != null) { ZapContext.list = src; ZapContext.key = sel; AppNav.openGuide = true; onOpen(ch) }
@@ -204,7 +228,7 @@ fun LiveTab(liveAll: List<Item>, groupsAll: Map<String, List<Item>>, favsAll: Li
                         }
                         val lbl = Lang.tr("Playlist") + ": " + (opts.getOrNull(curIdx) ?: "")
                         Box {
-                            CatRow(lbl, -1, false, Modifier.focusRequester(plFocus), onFocus = {}, onRight = { runCatching { firstChan.requestFocus() } }, onFav = {}, icon = AIcon.Download, raw = true) { plOpen = true }
+                            CatRow(lbl, -1, false, Modifier.focusRequester(plFocus), onFocus = {}, onRight = { enterChannels() }, onFav = {}, icon = AIcon.Download, raw = true) { plOpen = true }
                             if (plOpen) OptionPopup(opts, curIdx, { plOpen = false; plBack = true }) { pick ->
                                 plOpen = false; plBack = true
                                 if (multiView && pick == 0) LiveSource.k = -1
@@ -225,7 +249,7 @@ fun LiveTab(liveAll: List<Item>, groupsAll: Map<String, List<Item>>, favsAll: Li
                     }
                     if (n == "SRC") {
                         val lbl = Lang.tr("Quelle") + ": " + (if (srcK < 0) Lang.tr("Alle") else srcNames[srcK])
-                        CatRow(lbl, -1, false, Modifier, onFocus = {}, onRight = { runCatching { firstChan.requestFocus() } }, onFav = {}, icon = AIcon.Sliders, raw = true) {
+                        CatRow(lbl, -1, false, Modifier, onFocus = {}, onRight = { enterChannels() }, onFav = {}, icon = AIcon.Sliders, raw = true) {
                             LiveSource.k = if (srcK + 1 >= srcNames.size) -1 else srcK + 1
                             // Gewählte Kategorie gibt es in der anderen Quelle vielleicht nicht: dann „Alle Sender“
                             if (sel != FAV_CAT && sel != "ALL" && ChannelLists.byKey(sel) == null) sel = "ALL"
@@ -246,7 +270,7 @@ fun LiveTab(liveAll: List<Item>, groupsAll: Map<String, List<Item>>, favsAll: Li
                         return@itemsIndexed
                     }
                     if (n == "NEW") {
-                        CatRow("Neue Senderliste", -1, false, Modifier, onFocus = {}, onRight = { runCatching { firstChan.requestFocus() } }, onFav = {}, icon = AIcon.Plus) { newList(null) }
+                        CatRow("Neue Senderliste", -1, false, Modifier, onFocus = {}, onRight = { enterChannels() }, onFav = {}, icon = AIcon.Plus) { newList(null) }
                         return@itemsIndexed
                     }
                     val label = when {
@@ -277,7 +301,8 @@ fun LiveTab(liveAll: List<Item>, groupsAll: Map<String, List<Item>>, favsAll: Li
                     Box {
                         CatRow(
                             label, count, n == sel,
-                            (if (n == sel) Modifier.focusRequester(ContentFocus.req) else Modifier).let {
+                            (if (n == sel) Modifier.focusRequester(ContentFocus.req) else Modifier)
+                                .let { if (n == focusRowKey) it.focusRequester(catReq) else it }.let {
                                 if (!lifted) it else it.focusRequester(moveReq).onPreviewKeyEvent { e ->
                                     // Schwebende Kategorie: Hoch/Runter verschiebt, OK setzt ab, Links/Rechts bleiben wirkungslos
                                     when (e.key) {
@@ -296,10 +321,10 @@ fun LiveTab(liveAll: List<Item>, groupsAll: Map<String, List<Item>>, favsAll: Li
                                     }
                                 }
                             },
-                            onFocus = { sel = n }, onRight = { runCatching { firstChan.requestFocus() } },
+                            onFocus = { sel = n }, onRight = { enterChannels() },
                             onFav = { if (ml != null) listMenu = true else if (plainCat) catMenu = true },
                             icon = icon, raw = ml != null, lifted = lifted
-                        ) { runCatching { firstChan.requestFocus() } }
+                        ) { enterChannels() }
                         // Menü einer Anbieter-Kategorie (langes OK / Menütaste): Favorit, ausblenden, verschieben, sortieren
                         // Verschieben gilt für die normalen Kategorien (Favoriten stehen oben in ihrer eigenen Reihenfolge)
                         if (catMenu && plainCat) {
@@ -341,7 +366,7 @@ fun LiveTab(liveAll: List<Item>, groupsAll: Map<String, List<Item>>, favsAll: Li
                     }
                 }
             }
-            Column(Modifier.weight(0.9f).fillMaxHeight().padding(end = 24.dp)) {
+            Column(Modifier.weight(0.9f).fillMaxHeight().padding(end = 24.dp).onFocusChanged { inChannels = it.hasFocus }) {
                 // Eigene Liste: Umbenennen und Löschen gut sichtbar über den Sendern (vorher nur über langes OK auf der Liste)
                 if (curList != null) Row(
                     Modifier.fillMaxWidth().padding(bottom = 12.dp),

@@ -4,6 +4,11 @@ Versionen bis 1.1 stammen aus IPVIO Stream.
 
 ## Unreleased
 
+## 1.1.1 – 2026-11-15
+- Live TV: hidden categories are now also respected in the channel list inside the player.
+- Playlists: categories can now be switched on and off per type (Live TV, Movies, Series), with search, "All on/off" and channel count. Hiding in Live TV and in Settings now uses the same store; earlier settings are carried over.
+- New installs start with the Ocean colour theme. Existing installs keep their theme.
+
 ## 1.1.0 – 2026-11-15
 **Categories** (ported from IPVIO Stream 1.4.2, GPL-3.0)
 - Hide categories in Live TV, Movies and Series: hold OK (or press the menu key) on a category and choose "Hide category"; hidden ones are listed under "Hidden" at the end and can be brought back from there

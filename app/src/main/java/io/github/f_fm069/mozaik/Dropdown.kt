@@ -96,7 +96,7 @@ fun OptionPopup(options: List<String>, selected: Int, onDismiss: () -> Unit, ico
         val shape = RoundedCornerShape(DS.RadiusM)
         Column(
             Modifier.width(300.dp).heightIn(max = 340.dp).clip(shape)
-                .background(Surf.copy(alpha = 0.97f)).border(1.dp, DS.Overlay3, shape).padding(8.dp)
+                .background(Surf).border(1.dp, DS.Overlay3, shape).padding(8.dp)
         ) {
             LazyColumn(state = state) {
                 itemsIndexed(options) { i, o ->

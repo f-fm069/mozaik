@@ -63,6 +63,18 @@ http://h/x
     // ---------------------------------------------------------------- Farben
     @Test fun farben_weissAufSchwarzIst21() = assertEquals(21.0, ThemeMath.contrast(0xFFFFFF, 0x000000), 0.01)
 
+    @Test fun farben_menueSchriftIstAufJederFlaecheLesbar() {
+        // Menü (OptionPopup): weiße Schrift auf der Fläche, auch auf der fokussierten Zeile (25 % Weiß darüber)
+        fun mixWhite(rgb: Int, a: Double): Int {
+            fun ch(shift: Int) = (((rgb shr shift) and 0xFF) * (1 - a) + 255 * a).toInt()
+            return (ch(16) shl 16) or (ch(8) shl 8) or ch(0)
+        }
+        for (bg in Look.BGS) for (s in listOf(bg.surf, bg.surf2)) {
+            assertTrue(bg.name, ThemeMath.contrast(0xFFFFFF, s) >= 4.5)
+            assertTrue(bg.name + " fokussiert", ThemeMath.contrast(0xFFFFFF, mixWhite(s, 0.25)) >= 4.5)
+        }
+    }
+
     @Test fun farben_voreinstellungenSindLesbar() {
         for (p in Look.ACCENTS) {
             assertTrue(p.name, ThemeMath.contrast(ThemeMath.onAccent(p.fill), p.fill) >= 4.0)

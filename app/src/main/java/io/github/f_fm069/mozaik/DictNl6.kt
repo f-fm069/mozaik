@@ -8,6 +8,9 @@ Kategorie ausblenden¦Categorie verbergen
 Nach oben verschieben¦Omhoog verplaatsen
 Nach unten verschieben¦Omlaag verplaatsen
 An den Anfang verschieben¦Naar het begin verplaatsen
+Mit Hoch/Runter verschieben¦Met omhoog/omlaag verplaatsen
+Ans Ende verschieben¦Naar het einde verplaatsen
+Hoch/Runter: verschieben · OK oder Zurück: absetzen¦Omhoog/omlaag: verplaatsen · OK of Terug: neerzetten
 Kategorien sortieren …¦Categorieën sorteren …
 Anbieter-Reihenfolge¦Volgorde van de aanbieder
 Eigene Reihenfolge¦Eigen volgorde

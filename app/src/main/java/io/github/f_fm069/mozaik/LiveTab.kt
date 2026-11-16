@@ -87,6 +87,19 @@ fun LiveTab(liveAll: List<Item>, groupsAll: Map<String, List<Item>>, favsAll: Li
     val sortedCats = remember(groups, CatOrder.version) { CatOrder.sorted(CatOrder.LIVE, groups.keys.toList()) }
     val visCats = LiveCatLogic.visible(sortedCats, CatFavs.list, HiddenCats.list)
     val favCats = visCats.favs
+    // Verschiebe-Modus: die Kategorie „schwebt“ und wird mit Hoch/Runter bewegt (nur in der Arbeitsliste), OK/Zurück setzt sie ab
+    var moving by remember { mutableStateOf<String?>(null) }
+    var moveOrder by remember { mutableStateOf<List<String>?>(null) }
+    val moveReq = remember { FocusRequester() }
+    fun dropMoved() {
+        val ord = moveOrder
+        if (moving != null && ord != null && ord != visCats.rest) {
+            val full = CatOrder.sorted(CatOrder.LIVE, groupsAll.keys.toList())
+            CatOrder.setOrder(ctx, CatOrder.LIVE, CatMoveLogic.merge(full, visCats.rest, ord))
+        }
+        moving = null; moveOrder = null
+    }
+    androidx.activity.compose.BackHandler(enabled = moving != null) { dropMoved() }
     // Ausgeblendete Kategorien sind aus der gezeigten Liste ganz entfernt: für „Ausgeblendet“ die ungefilterte Liste prüfen
     val rawAll = PlaylistStore.unfilteredChannels()
     val rawCats = remember(rawAll, srcK) {
@@ -102,7 +115,7 @@ fun LiveTab(liveAll: List<Item>, groupsAll: Map<String, List<Item>>, favsAll: Li
     val recs = remember(Recorder.active.size, sel == "REC") { Recorder.list(ctx).map { Recorder.itemOf(it) } }
     // „Ausgeblendet“ am Ende, wenn es welche gibt
     val names = (if (PlaylistStore.lists.size > 1) listOf("PL") else emptyList()) + listOf("GUIDE", FAV_CAT) + (if (recs.isNotEmpty()) listOf("REC") else emptyList()) + myLists.map { ChannelListLogic.key(it) } + listOf("NEW", "ALL") + favCats +
-        visCats.rest + (if (hiddenHere.isNotEmpty()) listOf(HIDDEN_CAT) else emptyList())
+        (moveOrder ?: visCats.rest) + (if (hiddenHere.isNotEmpty()) listOf(HIDDEN_CAT) else emptyList())
     val curList = ChannelLists.byKey(sel)
     val list = when {
         sel == FAV_CAT -> favs
@@ -130,6 +143,17 @@ fun LiveTab(liveAll: List<Item>, groupsAll: Map<String, List<Item>>, favsAll: Li
     val catState = remember { LazyListState() }
     var ask by remember { mutableStateOf<NameAsk?>(null) }
     SideEffect { ContentFocus.tab = 3 }
+    // Fokus bleibt auf der verschobenen Kategorie (auch wenn die Zeile ihren Platz in der Liste wechselt)
+    LaunchedEffect(moving, moveOrder) {
+        val m = moving ?: return@LaunchedEffect
+        val idx = names.indexOf(m)
+        if (idx < 0) { moving = null; moveOrder = null; return@LaunchedEffect }
+        if (catState.layoutInfo.visibleItemsInfo.none { it.index == idx }) runCatching { catState.scrollToItem(maxOf(idx - 3, 0)) }
+        repeat(6) {
+            kotlinx.coroutines.delay(40)
+            if (runCatching { moveReq.requestFocus() }.isSuccess) return@LaunchedEffect
+        }
+    }
     // Auswahl zeigt auf eine gelöschte Liste: zurück zu „Alle Sender“
     LaunchedEffect(sel, myLists.size) { if (ChannelListLogic.idOfKey(sel) != null && curList == null) sel = "ALL" }
 
@@ -155,7 +179,7 @@ fun LiveTab(liveAll: List<Item>, groupsAll: Map<String, List<Item>>, favsAll: Li
         LiveBackdrop(focusedCh, Modifier.fillMaxSize())
         Row(Modifier.fillMaxSize().padding(top = 20.dp)) {
             LazyColumn(Modifier.width(270.dp).fillMaxHeight().padding(start = 24.dp, end = 8.dp), state = catState, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                itemsIndexed(names) { _, n ->
+                itemsIndexed(names, key = { _, n -> n }) { _, n ->
                     val ml = ChannelLists.byKey(n)
                     if (n == "GUIDE") {
                         // TV-Guide wie im Entwurf: startet den zuletzt gesehenen (sonst ersten) Sender der Auswahl und öffnet den Guide
@@ -249,30 +273,59 @@ fun LiveTab(liveAll: List<Item>, groupsAll: Map<String, List<Item>>, favsAll: Li
                     var catMenu by remember { mutableStateOf(false) }
                     var sortMenu by remember { mutableStateOf(false) }
                     val plainCat = ml == null && n != FAV_CAT && n != "ALL" && n != "REC" && groups.containsKey(n)
+                    val lifted = moving == n
                     Box {
                         CatRow(
                             label, count, n == sel,
-                            if (n == sel) Modifier.focusRequester(ContentFocus.req) else Modifier,
+                            (if (n == sel) Modifier.focusRequester(ContentFocus.req) else Modifier).let {
+                                if (!lifted) it else it.focusRequester(moveReq).onPreviewKeyEvent { e ->
+                                    // Schwebende Kategorie: Hoch/Runter verschiebt, OK setzt ab, Links/Rechts bleiben wirkungslos
+                                    when (e.key) {
+                                        Key.DirectionUp, Key.DirectionDown -> {
+                                            if (e.type == KeyEventType.KeyDown) {
+                                                moveOrder = CatMoveLogic.step(moveOrder ?: visCats.rest, n, if (e.key == Key.DirectionUp) -1 else 1)
+                                            }
+                                            true
+                                        }
+                                        Key.DirectionLeft, Key.DirectionRight -> true
+                                        Key.DirectionCenter, Key.Enter -> {
+                                            if (e.type == KeyEventType.KeyDown && e.nativeKeyEvent.repeatCount == 0) dropMoved()
+                                            true
+                                        }
+                                        else -> false
+                                    }
+                                }
+                            },
                             onFocus = { sel = n }, onRight = { runCatching { firstChan.requestFocus() } },
                             onFav = { if (ml != null) listMenu = true else if (plainCat) catMenu = true },
-                            icon = icon, raw = ml != null
+                            icon = icon, raw = ml != null, lifted = lifted
                         ) { runCatching { firstChan.requestFocus() } }
                         // Menü einer Anbieter-Kategorie (langes OK / Menütaste): Favorit, ausblenden, verschieben, sortieren
-                        if (catMenu && plainCat) OptionPopup(
-                            listOf(
-                                if (n in CatFavs.list) "Aus Favoriten entfernen" else "Zu Favoriten hinzufügen", "Kategorie ausblenden",
-                                "Nach oben verschieben", "Nach unten verschieben", "An den Anfang verschieben", "Kategorien sortieren …"
-                            ), -1, { catMenu = false }
-                        ) { i ->
-                            catMenu = false
-                            val all = groupsAll.keys.toList()
-                            when (i) {
-                                0 -> CatFavs.toggle(ctx, n)
-                                1 -> { if (sel == n) sel = "ALL"; HiddenCats.hide(ctx, n) }
-                                2 -> CatOrder.move(ctx, CatOrder.LIVE, all, n, -1)
-                                3 -> CatOrder.move(ctx, CatOrder.LIVE, all, n, 1)
-                                4 -> CatOrder.toTop(ctx, CatOrder.LIVE, all, n)
-                                else -> sortMenu = true
+                        // Verschieben gilt für die normalen Kategorien (Favoriten stehen oben in ihrer eigenen Reihenfolge)
+                        if (catMenu && plainCat) {
+                            val acts = buildList<Pair<String, () -> Unit>> {
+                                add((if (n in CatFavs.list) "Aus Favoriten entfernen" else "Zu Favoriten hinzufügen") to { CatFavs.toggle(ctx, n) })
+                                add("Kategorie ausblenden" to { if (sel == n) sel = "ALL"; HiddenCats.hide(ctx, n) })
+                                if (n in visCats.rest) {
+                                    // Verschoben wird unter den gezeigten Kategorien; Ausgeblendete und Favoriten behalten ihren Platz
+                                    fun place(f: (List<String>) -> List<String>) {
+                                        val full = CatOrder.sorted(CatOrder.LIVE, groupsAll.keys.toList())
+                                        CatOrder.setOrder(ctx, CatOrder.LIVE, CatMoveLogic.merge(full, visCats.rest, f(visCats.rest)))
+                                    }
+                                    add("Mit Hoch/Runter verschieben" to {
+                                        moveOrder = visCats.rest; moving = n
+                                        Toast.makeText(ctx, Lang.tr("Hoch/Runter: verschieben · OK oder Zurück: absetzen"), Toast.LENGTH_SHORT).show()
+                                    })
+                                    add("Nach oben verschieben" to { place { CatMoveLogic.step(it, n, -1) } })
+                                    add("Nach unten verschieben" to { place { CatMoveLogic.step(it, n, 1) } })
+                                    add("An den Anfang verschieben" to { place { CatMoveLogic.toStart(it, n) } })
+                                    add("Ans Ende verschieben" to { place { CatMoveLogic.toEnd(it, n) } })
+                                }
+                                add("Kategorien sortieren …" to { sortMenu = true })
+                            }
+                            OptionPopup(acts.map { it.first }, -1, { catMenu = false }) { i ->
+                                catMenu = false
+                                acts.getOrNull(i)?.second?.invoke()
                             }
                         }
                         if (sortMenu) OptionPopup(SORT_MODES, CatOrder.mode(CatOrder.LIVE), { sortMenu = false }) { i ->
@@ -378,13 +431,13 @@ private fun NameDialog(title: String, initial: String, onDismiss: () -> Unit, on
 @Composable
 private fun CatRow(
     label: String, count: Int, selected: Boolean, modifier: Modifier,
-    onFocus: () -> Unit, onRight: () -> Unit, onFav: () -> Unit, icon: AIcon? = null, raw: Boolean = false, onClick: () -> Unit
+    onFocus: () -> Unit, onRight: () -> Unit, onFav: () -> Unit, icon: AIcon? = null, raw: Boolean = false, lifted: Boolean = false, onClick: () -> Unit
 ) {
     var f by remember { mutableStateOf(false) }
     val shape = RoundedCornerShape(DS.RadiusS)
     Row(
-        modifier.fillMaxWidth().clip(shape)
-            .background(if (f) Color(0x33FFFFFF) else if (selected) Accent1.copy(alpha = 0.16f) else Color.Transparent)
+        modifier.fillMaxWidth().graphicsLayer { if (lifted) { scaleX = 1.05f; scaleY = 1.05f } }.clip(shape)
+            .background(if (lifted) Accent1.copy(alpha = 0.55f) else if (f) Color(0x33FFFFFF) else if (selected) Accent1.copy(alpha = 0.16f) else Color.Transparent)
             .onFocusChanged { f = it.isFocused; if (it.isFocused) onFocus() }
             .onPreviewKeyEvent { e ->
                 if (e.type == KeyEventType.KeyDown && e.key == Key.DirectionRight && e.nativeKeyEvent.repeatCount == 0) { onRight(); true } else false
@@ -396,6 +449,7 @@ private fun CatRow(
     ) {
         Row(Modifier.weight(1f, fill = false), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
             if (icon != null) AppIcon(icon, if (icon == AIcon.Star) DS.Gold else Color.White, size = 17.dp)
+            if (lifted) Text("↕", color = Color.White, fontSize = 16.sp, raw = true)
             Text(label, color = Color.White, fontSize = 16.sp, fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
                 maxLines = 1, overflow = TextOverflow.Ellipsis, raw = raw)
         }

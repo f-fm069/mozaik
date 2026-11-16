@@ -8,6 +8,9 @@ Kategorie ausblenden¦Hide category¦Kategoriyi gizle¦Sakrij kategoriju¦Sakrij
 Nach oben verschieben¦Move up¦Yukarı taşı¦Pomjeri gore¦Pomakni gore¦Pomeri gore¦Mover arriba¦Déplacer vers le haut¦Sposta su
 Nach unten verschieben¦Move down¦Aşağı taşı¦Pomjeri dolje¦Pomakni dolje¦Pomeri dole¦Mover abajo¦Déplacer vers le bas¦Sposta giù
 An den Anfang verschieben¦Move to top¦En başa taşı¦Pomjeri na početak¦Pomakni na početak¦Pomeri na početak¦Mover al principio¦Déplacer en premier¦Sposta all'inizio
+Mit Hoch/Runter verschieben¦Move with up/down¦Yukarı/aşağı ile taşı¦Pomjeri tipkama gore/dolje¦Pomakni tipkama gore/dolje¦Pomeri tasterima gore/dole¦Mover con arriba/abajo¦Déplacer avec haut/bas¦Sposta con su/giù
+Ans Ende verschieben¦Move to end¦Sona taşı¦Pomjeri na kraj¦Pomakni na kraj¦Pomeri na kraj¦Mover al final¦Déplacer en dernier¦Sposta in fondo
+Hoch/Runter: verschieben · OK oder Zurück: absetzen¦Up/Down: move · OK or Back: drop¦Yukarı/Aşağı: taşı · Tamam veya Geri: bırak¦Gore/Dolje: pomjeri · OK ili Nazad: spusti¦Gore/Dolje: pomakni · OK ili Natrag: spusti¦Gore/Dole: pomeri · OK ili Nazad: spusti¦Arriba/Abajo: mover · OK o Atrás: soltar¦Haut/Bas : déplacer · OK ou Retour : déposer¦Su/Giù: sposta · OK o Indietro: rilascia
 Kategorien sortieren …¦Sort categories …¦Kategorileri sırala …¦Sortiraj kategorije …¦Sortiraj kategorije …¦Sortiraj kategorije …¦Ordenar categorías …¦Trier les catégories …¦Ordina categorie …
 Anbieter-Reihenfolge¦Provider order¦Sağlayıcı sırası¦Redoslijed pružatelja¦Redoslijed pružatelja¦Redosled provajdera¦Orden del proveedor¦Ordre du fournisseur¦Ordine del provider
 Eigene Reihenfolge¦Own order¦Kendi sıram¦Vlastiti redoslijed¦Vlastiti redoslijed¦Sopstveni redosled¦Orden propio¦Ordre personnalisé¦Ordine personale

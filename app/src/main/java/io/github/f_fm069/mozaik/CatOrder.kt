@@ -60,6 +60,9 @@ object CatOrder {
     fun toTop(c: Context, area: String, names: List<String>, name: String) =
         save(c, area, CatOrderLogic.toTop(sorted(area, names), name))
 
+    /** Speichert eine fertige Reihenfolge (z. B. nach dem Verschieben mit Hoch/Runter); schaltet auf die eigene Reihenfolge um. */
+    fun setOrder(c: Context, area: String, order: List<String>) = save(c, area, order)
+
     private fun save(c: Context, area: String, order: List<String>) {
         init(c)
         // Plätze von Kategorien behalten, die gerade nicht in der Liste sind (z. B. andere Playlist aktiv)

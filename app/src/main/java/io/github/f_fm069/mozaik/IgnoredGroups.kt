@@ -44,8 +44,20 @@ object IgnoredGroups {
     val size: Int get() = keys.size
     fun has(key: String) = key in keys
 
+    /** Frühere eigene Datei für ausgeblendete Live-Kategorien; wird beim Einlesen hierher übernommen. */
+    private const val LEGACY_LIVE = "ipvio_hidecats"
+
     fun init(c: Context) {
-        val s = (Profiles.sp(c, PREFS).getString("k", "") ?: "").split("\n").filter { it.isNotBlank() }.toSet()
+        var s = (Profiles.sp(c, PREFS).getString("k", "") ?: "").split("\n").filter { it.isNotBlank() }.toSet()
+        // Migration: ausgeblendete Live-Kategorien aus der alten Datei übernehmen (auch nach dem Einspielen einer alten
+        // Sicherung oder einem Profilwechsel). Erst neu speichern, dann die alte Liste leeren, damit nichts verloren geht.
+        val legacy = Profiles.sp(c, LEGACY_LIVE)
+        val old = legacy.getString("k", "")
+        if (!old.isNullOrBlank()) {
+            s = CatFilterLogic.migrate(old, s)
+            Profiles.sp(c, PREFS).edit().putString("k", s.joinToString("\n")).commit()
+            legacy.edit().putString("k", "").apply()
+        }
         if (s != keys) { keys = s; idx = indexOf(s); version++ }
     }
 
@@ -82,10 +94,7 @@ object IgnoredGroups {
     fun groupKey(kind: Kind, group: String) = "g:" + kind.name + "|" + group
 
     /** Kategorienamen einer Art, die einzeln ausgeblendet sind (für „Ausgeblendet“ in Filme und Serien). */
-    fun hiddenGroups(kind: Kind): List<String> {
-        val prefix = "g:" + kind.name + "|"
-        return keys.filter { it.startsWith(prefix) }.map { it.substring(prefix.length) }.sortedBy { it.lowercase() }
-    }
+    fun hiddenGroups(kind: Kind): List<String> = CatFilterLogic.hidden(keys, kind)
 
     fun isIgnored(i: Item): Boolean {
         if (keys.isEmpty()) return false

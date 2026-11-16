@@ -87,6 +87,14 @@ fun LiveTab(liveAll: List<Item>, groupsAll: Map<String, List<Item>>, favsAll: Li
     val sortedCats = remember(groups, CatOrder.version) { CatOrder.sorted(CatOrder.LIVE, groups.keys.toList()) }
     val visCats = LiveCatLogic.visible(sortedCats, CatFavs.list, HiddenCats.list)
     val favCats = visCats.favs
+    // Ausgeblendete Kategorien sind aus der gezeigten Liste ganz entfernt: für „Ausgeblendet“ die ungefilterte Liste prüfen
+    val rawAll = PlaylistStore.unfilteredChannels()
+    val rawCats = remember(rawAll, srcK) {
+        val m = HashSet<String>()
+        for (i in rawAll) if (i.kind == Kind.LIVE && (srcK < 0 || i.src == srcK)) m.add(i.group)
+        m
+    }
+    val hiddenHere = HiddenCats.list.filter { it in rawCats }
     val myLists = ChannelLists.lists.toList()
     val byId = remember(live) { live.associateBy { it.id } }
     // Reihenfolge: Favoriten, eigene Senderlisten, „Neue Senderliste“, alle Sender, Kategorien
@@ -94,7 +102,7 @@ fun LiveTab(liveAll: List<Item>, groupsAll: Map<String, List<Item>>, favsAll: Li
     val recs = remember(Recorder.active.size, sel == "REC") { Recorder.list(ctx).map { Recorder.itemOf(it) } }
     // „Ausgeblendet“ am Ende, wenn es welche gibt
     val names = (if (PlaylistStore.lists.size > 1) listOf("PL") else emptyList()) + listOf("GUIDE", FAV_CAT) + (if (recs.isNotEmpty()) listOf("REC") else emptyList()) + myLists.map { ChannelListLogic.key(it) } + listOf("NEW", "ALL") + favCats +
-        visCats.rest + (if (HiddenCats.list.any { it in groups }) listOf(HIDDEN_CAT) else emptyList())
+        visCats.rest + (if (hiddenHere.isNotEmpty()) listOf(HIDDEN_CAT) else emptyList())
     val curList = ChannelLists.byKey(sel)
     val list = when {
         sel == FAV_CAT -> favs
@@ -203,7 +211,7 @@ fun LiveTab(liveAll: List<Item>, groupsAll: Map<String, List<Item>>, favsAll: Li
                     if (n == HIDDEN_CAT) {
                         // Ausgeblendete Kategorien: OK öffnet die Liste zum Zurückholen
                         var hidMenu by remember { mutableStateOf(false) }
-                        val hid = HiddenCats.list.filter { it in groups }
+                        val hid = hiddenHere
                         Box {
                             CatRow(Lang.tr("Ausgeblendet") + " (" + hid.size + ")", -1, false, Modifier, onFocus = {}, onRight = {}, onFav = { hidMenu = true }, icon = AIcon.Sliders, raw = true) { hidMenu = true }
                             if (hidMenu) OptionPopup(listOf("Alle wieder einblenden") + hid, -1, { hidMenu = false }) { i ->

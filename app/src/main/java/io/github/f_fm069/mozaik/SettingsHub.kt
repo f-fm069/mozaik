@@ -901,19 +901,28 @@ private fun FilterPage(ctx: Context, onLanguages: () -> Unit) {
     SectionTitle("Sprachen der Inhalte")
     Hint("Welche Sprachen geladen werden, stellst du unter „Playlists“ ein – das bestimmt, was aus der Playlist geladen wird.")
     PillButton("Sprachen der Inhalte öffnen", icon = AIcon.Globe) { onLanguages() }
-    // Die Schalter unten ändern nur einen Entwurf; gespeichert wird einmal mit „Übernehmen“ (oder beim Verlassen der
-    // Seite), damit die Playlist nicht nach jedem einzelnen Haken neu gefiltert wird. Übernommen aus IPVIO Stream (GPL-3.0).
+    SectionTitle("Kategorien")
+    Hint("Einzelne Kategorien von Live TV, Filmen und Serien schaltest du unter „Playlists“ ein und aus, direkt unter den Sprachen.")
+    PillButton("Kategorien öffnen", icon = AIcon.Sliders) { onLanguages() }
+    IgnoredGroupsSection(rememberIgnoreDraft(ctx))
+}
+
+/**
+ * Entwurf für den Speicher „Ignorieren“: Die Schalter ändern nur den Entwurf; gespeichert wird einmal mit „Übernehmen“
+ * (oder beim Verlassen der Seite), damit die Playlist nicht nach jedem einzelnen Haken neu gefiltert wird.
+ * Übernommen aus IPVIO Stream (GPL-3.0).
+ */
+@Composable
+private fun rememberIgnoreDraft(ctx: Context): IgnoreDraft {
     IgnoredGroups.init(ctx)
     val ver = IgnoredGroups.version
     val base = remember(ver) { IgnoredGroups.snapshot() }
     var draft by remember(base) { mutableStateOf(base) }
-    val d = IgnoreDraft(draft, draft != base, { draft = it }, { IgnoredGroups.applyDraft(ctx, draft - base, base - draft) }, { draft = base })
     val latest by rememberUpdatedState(base to draft)
     DisposableEffect(Unit) {
         onDispose { val (b, dr) = latest; IgnoredGroups.applyDraft(ctx, dr - b, b - dr) }
     }
-    IgnoredGroupsSection(d)
-    CategoryFilterSection(d)
+    return IgnoreDraft(draft, draft != base, { draft = it }, { IgnoredGroups.applyDraft(ctx, draft - base, base - draft) }, { draft = base })
 }
 
 /** Noch nicht gespeicherte „Ignorieren“-Schalter der Seite, gemeinsam für beide Bereiche. */
@@ -936,90 +945,59 @@ private fun IgnoreDraftBar(d: IgnoreDraft) {
 }
 
 /**
- * Kategorien von Filmen, Serien und Live TV: einzelne Kategorien ausblenden, oder alle aus und nur die gewünschten wieder
- * ein. Nutzt den Speicher „Ignorieren“, ausgeblendete Kategorien verschwinden also überall, ohne neu zu laden.
- * Jede Art ist zuerst zugeklappt: Eine Playlist kann Hunderte Kategorien haben.
+ * „Kategorien“: einzelne Kategorien von Live TV, Filmen und Serien ein- und ausblenden, getrennt nach Art, mit Suche,
+ * „Alle an“ / „Alle aus“ und Anzahl. Gemeinsamer Speicher mit dem Ausblenden in Live TV, Player, Filmen und Serien
+ * ([IgnoredGroups], Logik in [CatFilterLogic]). Der Sprachfilter wirkt zuerst: Kategorien ausgeblendeter Sprachen sind
+ * nicht geladen und erscheinen hier nicht. Jede Art ist zuerst zugeklappt, denn eine Playlist kann Hunderte Kategorien haben.
  */
 @Composable
 private fun CategoryFilterSection(d: IgnoreDraft) {
     // An der ungefilterten Liste festgemacht: Umschalten soll kein neues Zählen über die ganze Playlist starten
     val rawAll = PlaylistStore.unfilteredChannels()
-    val groups by produceState<Map<Kind, List<Pair<String, Int>>>>(emptyMap(), rawAll, PlaylistStore.langCounts) {
-        value = withContext(Dispatchers.Default) {
-            val raw = PlaylistStore.unfilteredChannels()
-            val out = LinkedHashMap<Kind, List<Pair<String, Int>>>()
-            for (k in listOf(Kind.MOVIE, Kind.SERIES, Kind.LIVE)) {
-                val m = HashMap<String, Int>()
-                for (i in raw) if (i.kind == k && i.group.isNotBlank()) m[i.group] = (m[i.group] ?: 0) + 1
-                out[k] = m.entries.sortedBy { it.key.lowercase() }.map { it.key to it.value }
-            }
-            out
-        }
+    val groups by produceState<Map<Kind, List<Pair<String, Int>>>>(emptyMap(), rawAll) {
+        value = withContext(Dispatchers.Default) { CAT_KINDS.associateWith { CatFilterLogic.counts(rawAll, it) } }
     }
-    if (groups.values.all { it.isEmpty() }) return
-    SectionTitle("Kategorien ein- und ausblenden")
-    Hint("Blende einzelne Kategorien aus oder schalte alle aus und nur die gewünschten wieder ein. Ausgeblendete Kategorien verschwinden sofort überall, ohne die Playlist neu zu laden.")
+    SectionTitle("Kategorien")
+    Hint("Schalte einzelne Kategorien an oder aus, getrennt für Live TV, Filme und Serien. Die Sprachauswahl oben wirkt zuerst: Kategorien ausgeblendeter Sprachen erscheinen hier nicht. Ausgeblendete Kategorien verschwinden sofort überall, ohne die Playlist neu zu laden.")
+    if (groups.values.all { it.isEmpty() }) { Hint("Noch keine Playlist geladen."); return }
     IgnoreDraftBar(d)
-    val names = mapOf(Kind.MOVIE to "Filme", Kind.SERIES to "Serien", Kind.LIVE to "Live TV")
-    // Suche über alle Arten, z. B. „EU | DE“: alle Treffer auf einmal schalten statt Hunderter einzelner Haken.
-    // Wie jeder Schalter hier ändert sie nur den Entwurf; gefiltert wird erst mit „Übernehmen“.
+    var open by remember { mutableStateOf<Kind?>(null) }
+    // Suche gilt nur für die geöffnete Art; Zurück leert zuerst die Suche, dann wird die Seite verlassen
     var query by remember { mutableStateOf("") }
     BackHandler(enabled = query.isNotEmpty()) { query = "" }
-    Field(query, { query = it }, "Kategorien suchen, z. B. EU | DE")
-    val hits = remember(groups, query) {
-        val m = GroupSearch.matcher(query)
-        if (m == null) null else groups.mapValues { (_, l) -> l.filter { m(it.first) } }
-    }
-    if (hits != null) { CategorySearchHits(hits, names, d); return }
-    var open by remember { mutableStateOf<Kind?>(null) }
-    for ((kind, list) in groups) {
-        if (list.isEmpty()) continue
-        val keys = remember(list) { list.map { IgnoredGroups.groupKey(kind, it.first) } }
-        val off = remember(keys, d.keys) { keys.count { it in d.keys } }
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            PillButton(
-                Lang.tr(names.getValue(kind)) + ": " + (list.size - off) + " / " + list.size,
-                icon = if (open == kind) AIcon.Up else AIcon.Down, raw = true
-            ) { open = if (open == kind) null else kind }
-            if (open == kind) {
-                PillButton("Alle aus") { d.onEdit(d.keys + keys) }
-                PillButton("Alle an") { d.onEdit(d.keys - keys.toSet()) }
-            }
-        }
-        if (open == kind) for ((g, n) in list) {
-            val key = IgnoredGroups.groupKey(kind, g)
-            ToggleRow(g, n.toString() + " Titel", key !in d.keys) { on -> d.onEdit(if (on) d.keys - key else d.keys + key) }
-        }
-    }
-}
-
-/** Angezeigte Zeilen bei einer Kategoriensuche; die Knöpfe für alle Treffer wirken trotzdem auf jeden Treffer. */
-private const val MAX_SEARCH_ROWS = 200
-
-/** Treffer der Kategoriensuche, nach Art gruppiert, mit Knöpfen, die alle Treffer im Entwurf auf einmal schalten. */
-@Composable
-private fun CategorySearchHits(hits: Map<Kind, List<Pair<String, Int>>>, names: Map<Kind, String>, d: IgnoreDraft) {
-    val keys = remember(hits) { hits.flatMap { (kind, l) -> l.map { IgnoredGroups.groupKey(kind, it.first) } } }
-    if (keys.isEmpty()) { Hint("Keine Kategorie gefunden."); return }
-    val off = remember(keys, d.keys) { keys.count { it in d.keys } }
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        PillButton("Alle Treffer aus") { d.onEdit(d.keys + keys) }
-        PillButton("Alle Treffer ein") { d.onEdit(d.keys - keys.toSet()) }
-        Text(Lang.tr("Gefundene Kategorien") + ": " + keys.size + " · " + Lang.tr("Ignoriert") + ": " + off, color = Muted, fontSize = 14.sp, raw = true)
-    }
-    var shown = 0
-    for ((kind, list) in hits) {
-        if (list.isEmpty() || shown >= MAX_SEARCH_ROWS) continue
-        SectionTitle(names.getValue(kind))
-        for ((g, n) in list) {
-            if (shown >= MAX_SEARCH_ROWS) break
-            shown++
-            val key = IgnoredGroups.groupKey(kind, g)
-            ToggleRow(g, n.toString() + " Titel", key !in d.keys) { on -> d.onEdit(if (on) d.keys - key else d.keys + key) }
+        for (kind in CAT_KINDS) {
+            val list = groups[kind].orEmpty()
+            if (list.isEmpty()) continue
+            val on = remember(list, d.keys) { CatFilterLogic.onCount(d.keys, kind, list.map { it.first }) }
+            PillButton(
+                Lang.tr(CAT_KIND_NAMES.getValue(kind)) + ": " + on + " / " + list.size,
+                light = open == kind, icon = if (open == kind) AIcon.Up else AIcon.Down, raw = true
+            ) { open = if (open == kind) null else kind; query = "" }
         }
     }
-    if (keys.size > shown) Hint("Es werden nicht alle Treffer angezeigt. Grenze die Suche genauer ein – „Alle Treffer“ gilt trotzdem für alle.")
+    val kind = open ?: return
+    val list = groups[kind].orEmpty()
+    if (list.isEmpty()) return
+    Field(query, { query = it }, "Kategorien suchen, z. B. EU | DE")
+    val rows = remember(list, d.keys, kind, query) { CatFilterLogic.rows(list, d.keys, kind, query) }
+    if (rows.isEmpty()) { Hint("Keine Kategorie gefunden."); return }
+    val searching = query.isNotBlank()
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        // Bei einer Suche wirken die Knöpfe nur auf die Treffer
+        PillButton(if (searching) "Alle Treffer ein" else "Alle an") { d.onEdit(CatFilterLogic.setAll(d.keys, kind, rows.map { it.name }, true)) }
+        PillButton(if (searching) "Alle Treffer aus" else "Alle aus") { d.onEdit(CatFilterLogic.setAll(d.keys, kind, rows.map { it.name }, false)) }
+        Text("${rows.count { it.on }} von ${rows.size} eingeblendet", color = Muted, fontSize = 14.sp)
+    }
+    val unit = if (kind == Kind.LIVE) " Sender" else " Titel"
+    for (r in rows) {
+        ToggleRow(r.name, r.count.toString() + unit, r.on) { on -> d.onEdit(CatFilterLogic.set(d.keys, kind, r.name, on)) }
+    }
 }
+
+/** Arten im Kategorie-Filter, in dieser Reihenfolge. */
+private val CAT_KINDS = listOf(Kind.LIVE, Kind.MOVIE, Kind.SERIES)
+private val CAT_KIND_NAMES = mapOf(Kind.LIVE to "Live TV", Kind.MOVIE to "Filme", Kind.SERIES to "Serien")
 
 /**
  * „Ignorieren“: Titel nach der Kennung des Anbieters bündeln („TR“, „EN“, „AR“ …) und ganze Bündel ein- oder ausschalten.
@@ -1207,6 +1185,8 @@ private fun PlaylistPage(ctx: Context, onAdd: () -> Unit, reload: () -> Unit) {
         PillButton("Aktive Playlist neu laden", icon = AIcon.Refresh) { reload() }
     }
     LanguageFilterSection(ctx)
+    // Einzelne Kategorien direkt nach den Sprachen: erst wirkt die Sprache, dann die Einzelschalter
+    CategoryFilterSection(rememberIgnoreDraft(ctx))
     SectionTitle("Automatisch aktualisieren")
     val modes = listOf("Bei jedem Start", "Alle paar Stunden", "Täglich", "Wöchentlich", "Nur von Hand")
     SelectRow("Playlist aktualisieren", modes[General.refreshMode], modes, General.refreshMode) { General.setPlan(ctx, mode = it) }

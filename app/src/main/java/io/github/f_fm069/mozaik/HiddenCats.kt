@@ -1,33 +1,29 @@
 package io.github.f_fm069.mozaik
 
 import android.content.Context
-import androidx.compose.runtime.mutableStateListOf
 
 /**
- * Ausgeblendete Live-TV-Kategorien (je Profil). Sie verschwinden aus der Kategorienliste und lassen sich über
- * „Ausgeblendet“ zurückholen. Übernommen aus IPVIO Stream (GPL-3.0).
+ * Ausgeblendete Live-TV-Kategorien (je Profil). Sie verschwinden überall (Kategorienliste, Player, Alle Sender, Suche)
+ * und lassen sich über „Ausgeblendet“ oder in den Einstellungen zurückholen. Übernommen aus IPVIO Stream (GPL-3.0).
+ *
+ * Keine eigene Speicherung mehr: Alles liegt im gemeinsamen Speicher von [IgnoredGroups] als "g:LIVE|Kategorie".
+ * Die frühere eigene Datei wird dort beim Einlesen übernommen (siehe [IgnoredGroups.init]).
  */
 object HiddenCats {
-    val list = mutableStateListOf<String>()
-    private var inited = false
-    private fun prefs(c: Context) = Profiles.sp(c, "ipvio_hidecats")
+    @Volatile private var cacheVer = -1
+    @Volatile private var cache: List<String> = emptyList()
 
-    fun init(c: Context) {
-        if (inited) return
-        inited = true
-        list.addAll((prefs(c).getString("k", "") ?: "").split("\n").filter { it.isNotBlank() })
-    }
+    /** Ausgeblendete Live-Kategorien, alphabetisch. Liest [IgnoredGroups.version], wird also bei Änderungen neu gezeichnet. */
+    val list: List<String>
+        get() {
+            val v = IgnoredGroups.version
+            if (v != cacheVer) { cache = IgnoredGroups.hiddenGroups(Kind.LIVE); cacheVer = v }
+            return cache
+        }
 
-    /** Nach einem Profilwechsel oder dem Zurücksetzen neu einlesen. */
-    fun reload(c: Context) {
-        inited = false
-        list.clear()
-        init(c)
-    }
+    fun init(c: Context) = IgnoredGroups.init(c)
 
-    private fun save(c: Context) = prefs(c).edit().putString("k", list.joinToString("\n")).apply()
-
-    fun hide(c: Context, name: String) { init(c); if (name !in list) list.add(name); save(c) }
-    fun show(c: Context, name: String) { init(c); list.remove(name); save(c) }
-    fun showAll(c: Context) { init(c); list.clear(); save(c) }
+    fun hide(c: Context, name: String) = IgnoredGroups.set(c, IgnoredGroups.groupKey(Kind.LIVE, name), true)
+    fun show(c: Context, name: String) = IgnoredGroups.set(c, IgnoredGroups.groupKey(Kind.LIVE, name), false)
+    fun showAll(c: Context) = IgnoredGroups.setMany(c, list.map { IgnoredGroups.groupKey(Kind.LIVE, it) }, false)
 }

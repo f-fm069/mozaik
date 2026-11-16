@@ -18,7 +18,8 @@ data class LiveCats(val favs: List<String>, val rest: List<String>) {
 object LiveCatLogic {
     /**
      * [sorted] = Kategorien des Anbieters, schon nach [CatOrder] sortiert; [catFavs] = Kategorie-Favoriten in ihrer
-     * Reihenfolge; [hidden] = ausgeblendete Kategorien ([HiddenCats]). Ausgeblendete fallen überall weg,
+     * Reihenfolge; [hidden] = ausgeblendete Kategorien ([HiddenCats], gemeinsamer Speicher mit [IgnoredGroups]
+     * und dem Kategorie-Filter in den Einstellungen). Ausgeblendete fallen überall weg,
      * Favoriten nur, wenn es die Kategorie gibt.
      */
     fun visible(sorted: List<String>, catFavs: List<String>, hidden: Collection<String>): LiveCats {

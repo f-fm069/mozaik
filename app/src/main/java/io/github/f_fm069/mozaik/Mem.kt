@@ -37,6 +37,9 @@ object Mem {
     /** Anteil des Arbeitsspeichers für den Bild-Cache (Coil). */
     fun imageCachePercent(tier: Int): Double = when (tier) { 0 -> 0.08; 1 -> 0.13; else -> 0.18 }
 
+    /** Gleichzeitig dekodierte Bilder (Coil-Standard: 4). Auf schwachen Geräten (Stufe 0 und 1) höchstens 2, damit der Speicher nicht überläuft. */
+    fun imageDecoders(tier: Int): Int = if (tier >= 2) 4 else 2
+
     /** Puffergrößen für den Player: (min ms, max ms, Start ms, Nachpuffern ms, Byte-Grenze). */
     fun bufferPlan(tier: Int): IntArray = when (tier) {
         0 -> intArrayOf(10_000, 25_000, 1_500, 3_000, 14 * 1024 * 1024)

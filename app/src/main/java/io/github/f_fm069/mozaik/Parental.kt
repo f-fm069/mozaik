@@ -60,8 +60,7 @@ object Parental {
         val now = System.currentTimeMillis()
         if (guard.waitSec(now) > 0) return false
         val p = prefsOf(c, profileId)
-        val h = p.getString("parental_hash", null) ?: return false
-        val ok = ParentalLogic.check(pin, p.getString("parental_salt", "") ?: "", h)
+        val ok = ParentalLogic.mayClearPin(pin, p.getString("parental_salt", ""), p.getString("parental_hash", null))
         guard.record(ok, now)
         return ok
     }

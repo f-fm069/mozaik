@@ -42,6 +42,12 @@ Resolved from the `releaseRuntimeClasspath` (direct and transitive dependencies)
 
 All licences above are compatible with distributing Mozaik under the GPL-3.0 (Apache License 2.0 code may be included in GPL-3.0 works).
 
+## Ideas adapted from IPVIO Stream
+
+| Change in Mozaik | Upstream commit (IPVIO Stream by Emrodev, GPL-3.0) |
+|---|---|
+| Removing the parental-control PIN requires entering the current PIN (idea and logic adapted, implemented independently for Mozaik) | `c9207de` |
+
 ## Fonts
 
 | Font | License | File |

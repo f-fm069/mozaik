@@ -26,4 +26,15 @@ class ParentalLogicTest {
         assertTrue(ParentalLogic.validPin("0000"))
         assertFalse(ParentalLogic.validPin("123"))
     }
+
+    @Test fun mayClearPin() {
+        val h = ParentalLogic.hash("1234", "s")
+        assertTrue(ParentalLogic.mayClearPin("1234", "s", h))
+        assertFalse(ParentalLogic.mayClearPin("4321", "s", h))
+        assertFalse(ParentalLogic.mayClearPin("123", "s", h))
+        assertFalse(ParentalLogic.mayClearPin("", "s", h))
+        assertFalse(ParentalLogic.mayClearPin("1234", "x", h))
+        assertFalse(ParentalLogic.mayClearPin("1234", "s", null))
+        assertFalse(ParentalLogic.mayClearPin("1234", null, ""))
+    }
 }

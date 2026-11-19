@@ -20,6 +20,10 @@ object ParentalLogic {
     fun validPin(pin: String): Boolean = pin.length == 4 && pin.all { it in '0'..'9' }
 
     fun check(pin: String, salt: String, expected: String): Boolean = validPin(pin) && hash(pin, salt) == expected
+
+    /** Darf die PIN entfernt werden? Nur, wenn eine PIN gesetzt ist und die eingegebene stimmt. */
+    fun mayClearPin(entered: String, salt: String?, hash: String?): Boolean =
+        !hash.isNullOrEmpty() && check(entered, salt.orEmpty(), hash)
 }
 
 /** Schutz gegen Durchprobieren der PIN: nach [maxFails] Fehlversuchen ist die Eingabe [lockMs] gesperrt. */

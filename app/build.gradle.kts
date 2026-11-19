@@ -63,6 +63,12 @@ android {
     }
 
     buildTypes {
+        // Own app ID and name: a debug build can never overwrite or remove the real, installed release app (and the other way round).
+        // The app name comes from src/debug/res/values/strings.xml.
+        debug {
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
+        }
         release {
             if (hasKeystore) signingConfig = signingConfigs.getByName("release")
             optimization {

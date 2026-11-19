@@ -48,6 +48,7 @@ All licences above are compatible with distributing Mozaik under the GPL-3.0 (Ap
 |---|---|
 | Removing the parental-control PIN requires entering the current PIN (idea and logic adapted, implemented independently for Mozaik) | `c9207de` |
 | In-app update: https only, complete-download check and SHA-256 check against the release asset `Mozaik.apk.sha256` (idea and logic adapted, implemented independently for Mozaik) | `68a15b9` |
+| Decode at most two images at a time on low-memory devices (idea and logic adapted, implemented independently for Mozaik) | `61782b3` |
 
 ## Fonts
 

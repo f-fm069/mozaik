@@ -35,6 +35,37 @@ object UpdateLogic {
         return (apks.firstOrNull { it.first.equals("Mozaik.apk", true) } ?: apks.firstOrNull { it.first.contains("mozaik", true) } ?: apks.firstOrNull())?.second
     }
 
+    /** Prüfsummen-Datei eines GitHub-Release: nur „Mozaik.apk.sha256“ (https), sonst null. */
+    fun pickSha(assets: List<Pair<String, String>>): String? =
+        assets.firstOrNull { it.first.equals("Mozaik.apk.sha256", true) && isHttps(it.second) }?.second
+
+    /** Downloads nur über https. */
+    fun isHttps(url: String): Boolean = url.startsWith("https://", ignoreCase = true)
+
+    /** SHA-256 als 64 Hex-Zeichen in Kleinbuchstaben; Leerzeichen werden ignoriert. Null, wenn kein gültiger Hash. */
+    fun normalizeSha(s: String?): String? {
+        val t = s.orEmpty().filterNot { it.isWhitespace() }.lowercase()
+        return if (t.length == 64 && t.all { it in '0'..'9' || it in 'a'..'f' }) t else null
+    }
+
+    /** Inhalt von „Mozaik.apk.sha256“: nur der Hash oder „<hash>  Mozaik.apk“ (sha256sum/shasum). Null, wenn nicht lesbar. */
+    fun parseShaFile(text: String?): String? =
+        text.orEmpty().split(Regex("\\s+")).firstNotNullOfOrNull { normalizeSha(it) }
+
+    fun hex(bytes: ByteArray): String = bytes.joinToString("") { "%02x".format(it.toInt() and 0xff) }
+
+    enum class Download { OK, OK_NO_CHECKSUM, INCOMPLETE, MISMATCH }
+
+    /**
+     * Prüft die geladene Datei. [expectedLen] = Content-Length (<= 0: unbekannt, dann keine Längenprüfung),
+     * [expectedSha] = Inhalt der Prüfsummen-Datei (null/ungültig: keine Prüfsumme, Update wird nicht blockiert).
+     */
+    fun verifyDownload(expectedSha: String?, actualHex: String, expectedLen: Long, actualLen: Long): Download {
+        if (expectedLen > 0L && actualLen != expectedLen) return Download.INCOMPLETE
+        val e = normalizeSha(expectedSha) ?: return Download.OK_NO_CHECKSUM
+        return if (e == normalizeSha(actualHex)) Download.OK else Download.MISMATCH
+    }
+
     /** Einmal am Tag automatisch suchen. */
     fun due(lastCheck: Long, now: Long): Boolean = now - lastCheck >= 20 * 3_600_000L || now < lastCheck
 

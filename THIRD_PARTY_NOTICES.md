@@ -42,6 +42,12 @@ Resolved from the `releaseRuntimeClasspath` (direct and transitive dependencies)
 
 All licences above are compatible with distributing Mozaik under the GPL-3.0 (Apache License 2.0 code may be included in GPL-3.0 works).
 
+## Ideas adapted from IPVIO Stream
+
+| Change in Mozaik | Upstream commit (IPVIO Stream by Emrodev, GPL-3.0) |
+|---|---|
+| In-app update: https only, complete-download check and SHA-256 check against the release asset `Mozaik.apk.sha256` (idea and logic adapted, implemented independently for Mozaik) | `68a15b9` |
+
 ## Fonts
 
 | Font | License | File |

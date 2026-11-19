@@ -63,6 +63,12 @@ object MatchLogic {
      * Passt ein gespeicherter Treffer noch? Nein, wenn die Playlist mehr Staffeln hat als die Serie bei TMDB
      * (typisch für einen falschen Treffer), oder wenn weder Name noch Originalname zum Titel passen und es einen besseren gibt.
      */
+    /**
+     * Suche mit Jahr ohne Treffer: bei Filmen noch einmal ohne Jahr suchen, bevor „nicht gefunden“ gespeichert wird
+     * (TMDB filtert das Jahr streng; ein abweichendes Jahr in der Playlist ließ sonst das Poster dauerhaft fehlen).
+     */
+    fun retryWithoutYear(tv: Boolean, year: Int?, resultCount: Int): Boolean = !tv && year != null && resultCount == 0
+
     fun seasonsFit(playlistMaxSeason: Int, tmdbSeasons: Int): Boolean =
         playlistMaxSeason <= 0 || tmdbSeasons <= 0 || playlistMaxSeason <= tmdbSeasons
 }

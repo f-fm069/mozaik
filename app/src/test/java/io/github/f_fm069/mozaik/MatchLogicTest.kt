@@ -45,6 +45,13 @@ class MatchLogicTest {
         assertTrue(MatchLogic.sameTitle("Fast & Furious", "Fast and Furious"))
     }
 
+    @Test fun ohneTrefferMitJahrNochEinmalOhneJahrSuchen() {
+        assertTrue(MatchLogic.retryWithoutYear(tv = false, year = 2008, resultCount = 0))   // Film, Jahr, 0 Treffer
+        assertFalse(MatchLogic.retryWithoutYear(tv = false, year = 2008, resultCount = 3))  // es gibt Treffer
+        assertFalse(MatchLogic.retryWithoutYear(tv = false, year = null, resultCount = 0))  // war schon ohne Jahr
+        assertFalse(MatchLogic.retryWithoutYear(tv = true, year = 2008, resultCount = 0))   // Serien: Jahr wird nie mitgeschickt
+    }
+
     @Test fun staffelnPassen() {
         assertFalse(MatchLogic.seasonsFit(8, 1))    // Playlist hat 8 Staffeln, Treffer nur 1 → falscher Treffer
         assertTrue(MatchLogic.seasonsFit(8, 8))

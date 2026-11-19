@@ -291,7 +291,9 @@ object MetaRepo {
             memPut(k, it); return it
         }
         val tv = i.kind == Kind.SERIES
-        val results = search(i, tv) ?: return null
+        var results = search(i, tv) ?: return null
+        // Jahr aus der Playlist passt nicht zu TMDB: noch einmal ohne Jahr suchen, bevor „nicht gefunden“ gemerkt wird
+        if (MatchLogic.retryWithoutYear(tv, i.year, results.length())) results = search(i, tv, withYear = false) ?: return null
         try {
             if (results.length() == 0) {
                 misses.add(k); missTs[k] = System.currentTimeMillis(); dirty = true
@@ -311,9 +313,9 @@ object MetaRepo {
     }
 
     /** TMDB-Suche mit bereinigtem Titel (ohne „DE - “ & Co.); null = keine Antwort. */
-    private suspend fun search(i: Item, tv: Boolean): org.json.JSONArray? {
+    private suspend fun search(i: Item, tv: Boolean, withYear: Boolean = true): org.json.JSONArray? {
         val q = URLEncoder.encode(MatchLogic.searchTitle(i.title), "UTF-8")
-        val yr = if (!tv && i.year != null) "&year=${i.year}" else ""
+        val yr = if (withYear && !tv && i.year != null) "&year=${i.year}" else ""
         val body = get(
             "https://api.themoviedb.org/3/search/${if (tv) "tv" else "movie"}" +
                 "?api_key=${Config.TMDB_KEY}&language=${Lang.tmdb()}&query=$q$yr"

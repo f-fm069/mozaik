@@ -65,7 +65,8 @@ The download link in the README always points to the newest release:
 - [ ] Raise `versionCode` and `versionName` in `app/build.gradle.kts`
 - [ ] Build the signed release APK and save it as `Mozaik-<version>.apk` plus an identical copy `Mozaik.apk`
 - [ ] Calculate the SHA-256 checksum: `shasum -a 256 Mozaik-<version>.apk` (macOS/Linux) or `certutil -hashfile Mozaik-<version>.apk SHA256` (Windows)
-- [ ] Create the GitHub release (https://github.com/f-fm069/mozaik/releases/latest) with **both** APK files and the `.sha256` file, and add the SHA-256 checksum to the notes
+- [ ] Save the checksum in a file named **exactly `Mozaik.apk.sha256`** (only the hash, or `<hash>  Mozaik.apk`). The in-app update checks the download against it; if the file is missing the update still works, but without the check
+- [ ] Create the GitHub release (https://github.com/f-fm069/mozaik/releases/latest) with **both** APK files and `Mozaik.apk.sha256`, and add the SHA-256 checksum to the notes
 - [ ] The APK asset is named **exactly `Mozaik.apk`** (not `mozaik.apk`, not `Mozaik-<version>.apk`), otherwise the Downloader code and the in-app update break
 - [ ] The release notes contain the Downloader hint (code `7525746` for Fire TV)
 - [ ] Check that `https://github.com/f-fm069/mozaik/releases/latest/download/Mozaik.apk` downloads the new version (this is also the Downloader address)

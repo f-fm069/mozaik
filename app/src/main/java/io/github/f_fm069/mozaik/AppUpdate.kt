@@ -10,11 +10,14 @@ import androidx.compose.runtime.setValue
 import androidx.core.content.FileProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import android.util.Log
+import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONObject
 import java.io.File
+import java.security.MessageDigest
 
-data class UpdateInfo(val code: Long, val name: String, val apkUrl: String, val notes: String)
+data class UpdateInfo(val code: Long, val name: String, val apkUrl: String, val notes: String, val shaUrl: String? = null)
 
 /**
  * Aktualisierung aus der App.
@@ -84,7 +87,7 @@ object AppUpdate {
         }
         val apk = UpdateLogic.pickApk(assets) ?: return null
         val notes = j.optString("body").lineSequence().map { it.trim() }.filter { it.isNotEmpty() && !it.startsWith("#") }.take(4).joinToString(" · ")
-        return UpdateInfo(0L, tag.trimStart('v', 'V'), apk, notes.take(300))
+        return UpdateInfo(0L, tag.trimStart('v', 'V'), apk, notes.take(300), UpdateLogic.pickSha(assets))
     }
 
     private fun fromFile(c: Context, u: String, j: JSONObject): UpdateInfo? {
@@ -107,14 +110,14 @@ object AppUpdate {
 
     private fun remember(c: Context, u: UpdateInfo?) {
         val e = prefs(c).edit()
-        if (u == null) e.remove("known") else e.putString("known", JSONObject().put("c", u.code).put("n", u.name).put("a", u.apkUrl).put("t", u.notes).toString())
+        if (u == null) e.remove("known") else e.putString("known", JSONObject().put("c", u.code).put("n", u.name).put("a", u.apkUrl).put("t", u.notes).put("s", u.shaUrl.orEmpty()).toString())
         e.apply()
     }
 
     private fun restore(c: Context) {
         val s = prefs(c).getString("known", null) ?: return
         val o = runCatching { JSONObject(s) }.getOrNull() ?: return
-        val u = UpdateInfo(o.optLong("c"), o.optString("n"), o.optString("a"), o.optString("t"))
+        val u = UpdateInfo(o.optLong("c"), o.optString("n"), o.optString("a"), o.optString("t"), o.optString("s").ifEmpty { null })
         // Inzwischen installiert? Dann nicht mehr anzeigen
         val newer = if (u.code > 0) UpdateLogic.isNewer(currentCode(c), u.code) else UpdateLogic.isNewerName(currentName(c), u.name)
         if (newer) available = u else remember(c, null)
@@ -132,12 +135,17 @@ object AppUpdate {
         runCatching {
             val dir = File(c.cacheDir, "updates").apply { mkdirs(); listFiles()?.forEach { it.delete() } }
             val out = File(dir, "mozaik-update.apk")
+            if (!UpdateLogic.isHttps(info.apkUrl)) error("Update nur über https erlaubt")
             val client = Net.withTimeouts(15, 60)
+            val md = MessageDigest.getInstance("SHA-256")
+            var total = 0L
+            var done = 0L
             client.newCall(Request.Builder().url(info.apkUrl).header("User-Agent", "Mozaik").build()).execute().use { r ->
                 if (!r.isSuccessful) error("Fehler ${r.code}")
+                // Auch nach Weiterleitungen darf der Download nicht über http laufen
+                if (!r.request.url.isHttps) error("Update nur über https erlaubt")
                 val body = r.body ?: error("Leere Antwort")
-                val total = body.contentLength()
-                var done = 0L
+                total = body.contentLength()
                 var last = -2
                 body.byteStream().use { input ->
                     out.outputStream().use { o ->
@@ -145,16 +153,34 @@ object AppUpdate {
                         while (true) {
                             val n = input.read(buf)
                             if (n < 0) break
-                            o.write(buf, 0, n); done += n
+                            o.write(buf, 0, n); md.update(buf, 0, n); done += n
                             val pct = if (total > 0) (done * 100 / total).toInt() else -1
                             if (pct != last) { last = pct; onProgress(pct) }
                         }
                     }
                 }
             }
+            val expected = info.shaUrl?.let { fetchSha(client, it) }
+            when (UpdateLogic.verifyDownload(expected, UpdateLogic.hex(md.digest()), total, done)) {
+                UpdateLogic.Download.OK -> {}
+                UpdateLogic.Download.OK_NO_CHECKSUM -> Log.w("AppUpdate", "Keine lesbare Prüfsumme (Mozaik.apk.sha256), Update wird nicht geprüft")
+                UpdateLogic.Download.INCOMPLETE -> { out.delete(); error("Download unvollständig. Bitte erneut versuchen.") }
+                UpdateLogic.Download.MISMATCH -> { out.delete(); error("Prüfsumme stimmt nicht. Das Update wurde verworfen.") }
+            }
             out
         }
     }
+
+    /** Liest „Mozaik.apk.sha256“. Fehlt sie oder ist sie nicht lesbar, ist das Ergebnis null (das Update wird dann nicht blockiert). */
+    private fun fetchSha(client: OkHttpClient, url: String): String? = runCatching {
+        if (!UpdateLogic.isHttps(url)) return@runCatching null
+        client.newCall(Request.Builder().url(url).header("User-Agent", "Mozaik").build()).execute().use { r ->
+            if (!r.isSuccessful || !r.request.url.isHttps) return@use null
+            val buf = ByteArray(4096)
+            val n = r.body?.byteStream()?.read(buf) ?: return@use null
+            UpdateLogic.parseShaFile(if (n > 0) String(buf, 0, n, Charsets.UTF_8) else null)
+        }
+    }.onFailure { Log.w("AppUpdate", "Prüfsumme nicht ladbar: " + it.javaClass.simpleName) }.getOrNull()
 
     /** Öffnet den System-Installer. Fehlt die Erlaubnis „Apps aus unbekannten Quellen“, öffnet sich stattdessen deren Einstellung. */
     fun install(c: Context, apk: File): Boolean {

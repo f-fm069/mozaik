@@ -18,6 +18,18 @@ class Round20Test {
         assertFalse(UpdateLogic.isNewerName("1.0", "latest"))
     }
 
+    // Release 1.2: versionName "1.2" gegen GitHub-Tags
+    @Test fun versionName12_gegenGithubTags() {
+        assertTrue(UpdateLogic.isNewerName("1.1.1", "v1.2"))
+        assertTrue(UpdateLogic.isNewerName("1.1", "v1.2"))
+        assertFalse(UpdateLogic.isNewerName("1.2", "v1.2"))
+        assertFalse(UpdateLogic.isNewerName("1.2", "v1.2.0"))
+        assertFalse(UpdateLogic.isNewerName("1.2", "v1.1.1"))
+        assertFalse(UpdateLogic.isNewerName("1.2-debug", "v1.2"))
+        assertTrue(UpdateLogic.isNewerName("1.2", "v1.2.1"))
+        assertTrue(UpdateLogic.isNewerName("1.2", "v1.10"))
+    }
+
     @Test fun picksApk() {
         val a = listOf("notes.txt" to "https://x/notes.txt", "app-release.apk" to "https://x/a.apk", "Mozaik.apk" to "https://x/i.apk")
         assertEquals("https://x/i.apk", UpdateLogic.pickApk(a))

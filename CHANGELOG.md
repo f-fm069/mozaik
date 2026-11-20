@@ -2,14 +2,20 @@
 
 Versionen bis 1.1 stammen aus IPVIO Stream.
 
-## Unreleased
-**New main menu (release 1.2)**
+## 1.2 – 2026-11-21
+**New main menu**
 - Sidebar: the logo is 10 % larger; Home, Live TV, Movies, Series, Sport and History sit in the vertical middle; Settings is separate at the bottom, without a divider line (with the bar at the top, Settings is at the right end)
 - "History" now has four tabs at the top: History, Favourites, My list and EPG. Favourites, My list and EPG are no longer separate menu items; their pages and functions are unchanged. The EPG tab opens the TV guide in the player, as before
 - The "Favourites" and "My list" tiles on the home page jump to the matching tab in History; "History" in the menu always opens on its first tab
 - Back from History, Favourites or My list goes to the tab bar first, then to the sidebar (like Movies and Series)
 - Settings > Menu: Settings can no longer be moved and always stays at the bottom
 - **One-time reset:** the menu order and the hidden entries you set yourself are reset to the new default once, because the old entries (EPG, Favourites, My list) no longer exist. You can change the menu again under Settings > Menu
+
+**Other changes**
+- Posters: a movie with no match is searched again without the year
+- Parental control: removing the PIN now needs the current PIN (idea from IPVIO Stream `c9207de`, implemented independently for Mozaik)
+- In-app update: the download must use https, is checked for completeness and against the SHA-256 checksum in the release asset `Mozaik.apk.sha256`; a download that is incomplete or does not match is discarded (idea from IPVIO Stream `68a15b9`, implemented independently for Mozaik)
+- Images: on low-memory devices at most two images are decoded at a time (idea from IPVIO Stream `61782b3`, implemented independently for Mozaik)
 
 ## 1.1.1 – 2026-11-15
 - Live TV: hidden categories are now also left out of the channel list inside the player; the player uses the same order as the Live TV list.

@@ -52,7 +52,7 @@ Users of an APK signed with a different key have to uninstall once (Settings > S
 4. On GitHub: **Releases > Draft a new release**
    - Tag: `v` + versionName, e.g. `v1.2` (the app compares this tag with its own version)
    - Title and notes: what is new (the first lines appear in the app)
-   - Attach both files and the `.sha256` file. `Mozaik.apk` must be there with **exactly this name**: the README,
+   - Attach both APK files and the checksum file, which must be named **exactly `Mozaik.apk.sha256`** (the app looks for this name; without it the update still installs, but unchecked). `Mozaik.apk` must be there with **exactly this name**: the README,
      the Downloader code `7525746` (it points to `…/releases/latest/download/Mozaik.apk`) and the in-app update use it.
    - Mention the Downloader code `7525746` in the install steps of the release notes.
    - **Publish release** (not "pre-release", the app ignores those)

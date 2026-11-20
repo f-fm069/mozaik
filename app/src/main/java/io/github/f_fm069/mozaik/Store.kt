@@ -137,10 +137,14 @@ object AppSettings {
         clockSize = p.getInt("clock_size", 1).coerceIn(0, 2)
         menuOrder.clear(); menuOrder.addAll(MenuLogic.parseOrder(p.getString("menu_order", null)))
         menuHidden.clear(); menuHidden.addAll(MenuLogic.parseHidden(p.getString("menu_hidden", MenuLogic.DEFAULT_HIDDEN)))
-        // Einmalig (Runde 14): „EPG“ aus der Seitenleiste nehmen (öffnete nur den TV-Guide, den es in Live TV gibt)
-        if (p.getInt("menu_ver", 1) < 2) {
-            if (MenuLogic.EPG !in menuHidden) menuHidden.add(MenuLogic.EPG)
-            p.edit().putInt("menu_ver", 2).putString("menu_hidden", menuHidden.joinToString(",")).apply()
+        // Einmalig (Release 1.2): neues Menü. EPG, Favoriten und Meine Liste sind jetzt Reiter in „Verlauf“.
+        // Eine selbst gebaute Reihenfolge und versteckte Punkte werden dabei auf den neuen Standard zurückgesetzt.
+        if (p.getInt("menu_ver", 1) < MenuLogic.MENU_VERSION) {
+            menuOrder.clear(); menuOrder.addAll(MenuLogic.DEFAULT_ORDER)
+            menuHidden.clear(); menuHidden.addAll(MenuLogic.parseHidden(MenuLogic.DEFAULT_HIDDEN))
+            p.edit().putInt("menu_ver", MenuLogic.MENU_VERSION)
+                .putString("menu_order", menuOrder.joinToString(","))
+                .putString("menu_hidden", menuHidden.joinToString(",")).apply()
         }
         searchHistory.clear()
         searchHistory.addAll((p.getString("search_hist", "") ?: "").split("\n").filter { it.isNotBlank() })

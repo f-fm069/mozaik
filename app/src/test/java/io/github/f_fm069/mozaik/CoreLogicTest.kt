@@ -163,31 +163,31 @@ http://h/x
     }
 
     // ---------------------------------------------------------------- Menü
-    @Test fun menue_standard() = assertEquals(listOf(0, 3, 1, 2, 10, 6, 7, 8, 9, 4, 5), MenuLogic.parseOrder(null))
+    @Test fun menue_standard() = assertEquals(listOf(0, 3, 1, 2, 10, 9, 4, 5), MenuLogic.parseOrder(null))
 
     @Test fun menue_alteReihenfolge_neueBereicheVorEinstellungen() {
-        assertEquals(listOf(0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 5), MenuLogic.parseOrder("0,1,2,3,4,5"))
-        assertEquals(listOf(6, 7, 8, 9, 10, 5, 0, 1, 2, 3, 4), MenuLogic.parseOrder("5,0,1,2,3,4"))
-        assertEquals(listOf(0, 4, 1, 2, 3, 6, 7, 8, 9, 10, 5), MenuLogic.parseOrder("0,4,1,2,3,6,5"))
+        assertEquals(listOf(0, 1, 2, 3, 4, 9, 10, 5), MenuLogic.parseOrder("0,1,2,3,4,5"))
+        assertEquals(listOf(0, 1, 2, 3, 4, 9, 10, 5), MenuLogic.parseOrder("5,0,1,2,3,4"))
+        assertEquals(listOf(0, 4, 1, 2, 3, 9, 10, 5), MenuLogic.parseOrder("0,4,1,2,3,6,5"))
     }
 
     @Test fun menue_kaputteWerteWerdenRepariert() {
         val o = MenuLogic.parseOrder("11,3,3,x,-1,2")
-        assertEquals(listOf(3, 2, 0, 1, 4, 6, 7, 8, 9, 10, 5), o)
-        assertEquals(MenuLogic.COUNT, o.toSet().size)
+        assertEquals(listOf(3, 2, 0, 1, 4, 9, 10, 5), o)
+        assertEquals(MenuLogic.MENU_IDS.size, o.toSet().size)
     }
 
     @Test fun menue_startUndEinstellungenBleibenImmerSichtbar() {
-        assertEquals(listOf(1, 2, 6), MenuLogic.parseHidden("0,1,2,5,6,19"))
+        assertEquals(listOf(1, 2), MenuLogic.parseHidden("0,1,2,5,6,19"))
         assertEquals(emptyList<Int>(), MenuLogic.toggle(emptyList(), 0))
         assertEquals(emptyList<Int>(), MenuLogic.toggle(emptyList(), 5))
-        val all = MenuLogic.visible(MenuLogic.DEFAULT_ORDER, listOf(1, 2, 3, 4, 6, 7, 8, 9, 10))
+        val all = MenuLogic.visible(MenuLogic.DEFAULT_ORDER, listOf(1, 2, 3, 4, 9, 10))
         assertEquals(listOf(0, 5), all)
     }
 
     @Test fun menue_verschiebenUndGrenzen() {
         val o = MenuLogic.DEFAULT_ORDER
-        assertEquals(listOf(3, 0, 1, 2, 10, 6, 7, 8, 9, 4, 5), MenuLogic.move(o, 0, 1))
+        assertEquals(listOf(3, 0, 1, 2, 10, 9, 4, 5), MenuLogic.move(o, 0, 1))
         assertEquals(o, MenuLogic.move(o, 0, -1))
         assertEquals(o, MenuLogic.move(o, 5, 1))
         assertEquals(o, MenuLogic.move(o, 99, 1))
@@ -197,6 +197,47 @@ http://h/x
         val h = MenuLogic.toggle(emptyList(), 3)
         assertEquals(listOf(3), h)
         assertEquals(emptyList<Int>(), MenuLogic.toggle(h, 3))
+    }
+
+    // Release 1.2: EPG, Favoriten und Meine Liste sind Reiter in „Verlauf“, keine Menüpunkte
+    @Test fun menue_reiterSindKeineMenuepunkte() {
+        val alt = "0,3,1,2,10,6,7,8,9,4,5"   // gespeicherte Reihenfolge vor Release 1.2
+        val o = MenuLogic.parseOrder(alt)
+        assertEquals(listOf(0, 3, 1, 2, 10, 9, 4, 5), o)
+        assertTrue(o.none { it in MenuLogic.SUB_TABS })
+        assertEquals(emptyList<Int>(), MenuLogic.parseHidden("6,7,8"))
+        assertEquals(emptyList<Int>(), MenuLogic.toggle(emptyList(), MenuLogic.FAVS))
+        assertEquals(emptyList<Int>(), MenuLogic.toggle(emptyList(), MenuLogic.MYLIST))
+        assertEquals(emptyList<Int>(), MenuLogic.toggle(emptyList(), MenuLogic.EPG))
+    }
+
+    @Test fun menue_einstellungenBleibtGanzUnten() {
+        assertEquals(MenuLogic.SETTINGS, MenuLogic.parseOrder("5,0,3").last())
+        assertEquals(MenuLogic.SETTINGS, MenuLogic.parseOrder("").last())
+        val o = MenuLogic.DEFAULT_ORDER
+        assertEquals(MenuLogic.SETTINGS, o.last())
+        // Der letzte Punkt davor lässt sich nicht hinter „Einstellungen“ schieben, Einstellungen selbst nicht hoch
+        assertEquals(o, MenuLogic.move(o, MenuLogic.SEARCH, 1))
+        assertEquals(o, MenuLogic.move(o, MenuLogic.SETTINGS, -1))
+    }
+
+    @Test fun menue_standardReihenfolgeRelease12() {
+        // Home, Live TV, Filme, Serien, Sport, Verlauf, (Suche versteckt), Einstellungen
+        assertEquals(listOf(0, 3, 1, 2, MenuLogic.SPORT, MenuLogic.VERLAUF, MenuLogic.SEARCH, MenuLogic.SETTINGS), MenuLogic.DEFAULT_ORDER)
+        assertEquals(listOf(MenuLogic.SEARCH), MenuLogic.parseHidden(MenuLogic.DEFAULT_HIDDEN))
+        assertEquals(
+            listOf(0, 3, 1, 2, MenuLogic.SPORT, MenuLogic.VERLAUF, MenuLogic.SETTINGS),
+            MenuLogic.visible(MenuLogic.DEFAULT_ORDER, MenuLogic.parseHidden(MenuLogic.DEFAULT_HIDDEN))
+        )
+    }
+
+    @Test fun menue_reiterMarkierenVerlaufInDerLeiste() {
+        assertEquals(MenuLogic.VERLAUF, MenuLogic.sidebarId(MenuLogic.VERLAUF))
+        assertEquals(MenuLogic.VERLAUF, MenuLogic.sidebarId(MenuLogic.FAVS))
+        assertEquals(MenuLogic.VERLAUF, MenuLogic.sidebarId(MenuLogic.MYLIST))
+        assertEquals(MenuLogic.VERLAUF, MenuLogic.sidebarId(MenuLogic.EPG))
+        assertEquals(3, MenuLogic.sidebarId(3))
+        assertEquals(MenuLogic.SETTINGS, MenuLogic.sidebarId(MenuLogic.SETTINGS))
     }
 
     // ---------------------------------------------------------------- Fehlertexte

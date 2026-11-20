@@ -413,6 +413,18 @@ fun HomeScreen(
             runCatching { sideFocus.requestFocus() }
         }
     }
+    // Verlauf, Favoriten, Meine Liste: Zurück aus dem Inhalt führt zuerst zum markierten Reiter oben, von dort in die Seitenleiste
+    BackHandler(enabled = !inSidebar && !inHeader && MenuLogic.sidebarId(tab) == MenuLogic.VERLAUF && all.isNotEmpty()) {
+        scope.launch {
+            runCatching { states[tab].scrollToItem(0) }
+            repeat(8) {
+                delay(60)
+                if (runCatching { HeaderFocus.activeTab.requestFocus() }.getOrDefault(false)) return@launch
+                if (runCatching { HeaderFocus.firstTab.requestFocus() }.getOrDefault(false)) return@launch
+            }
+            runCatching { sideFocus.requestFocus() }
+        }
+    }
     BackHandler(enabled = inSidebar && tab != 0) { onTab(0) }
     BackHandler(enabled = inSidebar && tab == 0 && General.confirmExit) {
         val now = System.currentTimeMillis()

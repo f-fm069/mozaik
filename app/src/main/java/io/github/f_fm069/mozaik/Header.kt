@@ -42,6 +42,8 @@ import kotlinx.coroutines.launch
 object HeaderFocus {
     val profile = FocusRequester()
     val firstTab = FocusRequester()
+    /** Ausgewählter Reiter, wenn er nicht der erste ist (Verlauf: Favoriten, Meine Liste). Ist der erste ausgewählt, gilt [firstTab]. */
+    val activeTab = FocusRequester()
     /** Reiter, der nach dem Zurückkommen (z. B. aus „Alle Filme“) wieder markiert wird. */
     var returnTo: String? = null
 }
@@ -73,7 +75,7 @@ fun HeaderBar(
             Spacer(Modifier.width(dpx(22)))
             Row(horizontalArrangement = Arrangement.spacedBy(dpx(8)), verticalAlignment = Alignment.CenterVertically) {
                 tabs.forEachIndexed { i, t ->
-                    NavTab(t, if (i == 0) (if (firstIsContent) ContentFocus.req else HeaderFocus.firstTab) else null)
+                    NavTab(t, if (i == 0) (if (firstIsContent) ContentFocus.req else HeaderFocus.firstTab) else if (t.selected) HeaderFocus.activeTab else null)
                 }
             }
         }

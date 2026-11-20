@@ -3,6 +3,13 @@
 Versionen bis 1.1 stammen aus IPVIO Stream.
 
 ## Unreleased
+**New main menu (release 1.2)**
+- Sidebar: the logo is 10 % larger; Home, Live TV, Movies, Series, Sport and History sit in the vertical middle; Settings is separate at the bottom, without a divider line (with the bar at the top, Settings is at the right end)
+- "History" now has four tabs at the top: History, Favourites, My list and EPG. Favourites, My list and EPG are no longer separate menu items; their pages and functions are unchanged. The EPG tab opens the TV guide in the player, as before
+- The "Favourites" and "My list" tiles on the home page jump to the matching tab in History; "History" in the menu always opens on its first tab
+- Back from History, Favourites or My list goes to the tab bar first, then to the sidebar (like Movies and Series)
+- Settings > Menu: Settings can no longer be moved and always stays at the bottom
+- **One-time reset:** the menu order and the hidden entries you set yourself are reset to the new default once, because the old entries (EPG, Favourites, My list) no longer exist. You can change the menu again under Settings > Menu
 
 ## 1.1.1 – 2026-11-15
 - Live TV: hidden categories are now also left out of the channel list inside the player; the player uses the same order as the Live TV list.

@@ -42,12 +42,14 @@ import kotlinx.coroutines.launch
 object HeaderFocus {
     val profile = FocusRequester()
     val firstTab = FocusRequester()
+    /** Ausgewählter Reiter, wenn er nicht der erste ist (Verlauf: Favoriten, Meine Liste). Ist der erste ausgewählt, gilt [firstTab]. */
+    val activeTab = FocusRequester()
     /** Reiter, der nach dem Zurückkommen (z. B. aus „Alle Filme“) wieder markiert wird. */
     var returnTo: String? = null
 }
 
 /** Reiter oben neben der Suche (Filme/Serien: Alle, Neu hinzugefügt, Top bewertet, Kategorien). */
-class HeaderTab(val label: String, val icon: AIcon, val id: String, val onClick: () -> Unit)
+class HeaderTab(val label: String, val icon: AIcon, val id: String, val selected: Boolean = false, val onClick: () -> Unit)
 
 /**
  * Kopfzeile (Runde 14): Suchfeld, auf Filme/Serien die Reiter, rechts „Ansicht“ (Kartengröße/Bilder), Glocke (Erinnerungen)
@@ -73,7 +75,7 @@ fun HeaderBar(
             Spacer(Modifier.width(dpx(22)))
             Row(horizontalArrangement = Arrangement.spacedBy(dpx(8)), verticalAlignment = Alignment.CenterVertically) {
                 tabs.forEachIndexed { i, t ->
-                    NavTab(t, if (i == 0) (if (firstIsContent) ContentFocus.req else HeaderFocus.firstTab) else null)
+                    NavTab(t, if (i == 0) (if (firstIsContent) ContentFocus.req else HeaderFocus.firstTab) else if (t.selected) HeaderFocus.activeTab else null)
                 }
             }
         }
@@ -126,7 +128,8 @@ private fun NavTab(t: HeaderTab, fixedReq: FocusRequester?) {
     }
     Row(
         Modifier.focusRequester(back).graphicsLayer { scaleX = s; scaleY = s }.height(dpx(44)).clip(shape)
-            .background(if (f) DS.FocusFill else Color(0x14FFFFFF))
+            // Ausgewählter Reiter (z. B. „Favoriten“ in Verlauf): getönte Fläche in der Designfarbe, solange er nicht den Fokus hat
+            .background(if (f) DS.FocusFill else if (t.selected) Accent1.copy(alpha = .26f) else Color(0x14FFFFFF))
             .onFocusChanged { f = it.isFocused }
             .trackFocus()
             .clickable { HeaderFocus.returnTo = t.id; t.onClick() }
@@ -134,8 +137,8 @@ private fun NavTab(t: HeaderTab, fixedReq: FocusRequester?) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(dpx(9))
     ) {
-        AppIcon(t.icon, if (f) DS.FocusInk else Color(0xFFD8D8DE), size = dpx(18))
-        Text(t.label, color = if (f) DS.FocusInk else Color.White, fontSize = spx(16), fontWeight = FontWeight.SemiBold, maxLines = 1)
+        AppIcon(t.icon, if (f) DS.FocusInk else if (t.selected) Accent1 else Color(0xFFD8D8DE), size = dpx(18))
+        Text(t.label, color = if (f) DS.FocusInk else Color.White, fontSize = spx(16), fontWeight = if (t.selected) FontWeight.Bold else FontWeight.SemiBold, maxLines = 1)
     }
 }
 

@@ -74,6 +74,8 @@ object AppNav {
     @Volatile var focusTab = -1
     /** Beim nächsten Start des Players gleich den TV-Guide öffnen (Live TV > „TV-Guide“). */
     @Volatile var openGuide = false
+    /** Reiterwechsel in „Verlauf“: der Fokus bleibt auf dem Reiter (goTab setzt ihn sonst in den Inhalt). */
+    @Volatile var keepFocus = false
 }
 
 object RowStates {

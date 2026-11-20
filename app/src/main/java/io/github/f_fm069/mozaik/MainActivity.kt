@@ -295,7 +295,8 @@ private fun AppContent() {
         tab = id; CatMemory.reset()
         // Filme/Serien direkt zu den Kategorien (Einstellungen > Allgemein); sonst die Startseite des Bereichs
         VodRows.open(VodRowsLogic.areaFor(id, General.vodCats))
-        jumpTick++
+        // Reiterwechsel in „Verlauf“: der Fokus bleibt auf dem Reiter, damit man gleich weiterblättern kann
+        if (AppNav.keepFocus) AppNav.keepFocus = false else jumpTick++
     }
 
     val open: (Item) -> Unit = { i ->

@@ -281,7 +281,20 @@ fun HomeScreen(
                 if (next != cur) VodRows.shown[tab] = next
             }
     }
-    val navTabs = if (!isVod) emptyList() else listOf(
+    // „Verlauf“ mit vier Reitern: Verlauf, Favoriten, Meine Liste, EPG (Favoriten und Meine Liste sind keine eigenen Menüpunkte mehr).
+    // EPG ist keine Seite: der Reiter öffnet wie bisher den TV-Guide im Player.
+    val verlaufTabs = if (MenuLogic.sidebarId(tab) != MenuLogic.VERLAUF) emptyList() else listOf(
+        Triple(MenuLogic.VERLAUF, "Verlauf", AIcon.History),
+        Triple(MenuLogic.FAVS, "Favoriten", AIcon.Heart),
+        Triple(MenuLogic.MYLIST, "Meine Liste", AIcon.Lists),
+        Triple(MenuLogic.EPG, "EPG", AIcon.Live)
+    ).map { (id, label, icon) ->
+        HeaderTab(label, icon, "tb:vl$id", selected = id == tab) {
+            if (id != MenuLogic.EPG) AppNav.keepFocus = true
+            onTab(id)
+        }
+    }
+    val navTabs = if (verlaufTabs.isNotEmpty()) verlaufTabs else if (!isVod) emptyList() else listOf(
         HeaderTab("Kategorien", AIcon.Categories, "tb:cats$tab") { openCats() },
         HeaderTab("Top bewertet", AIcon.Star, "tb:top$tab") { onBrowse(BrowseReq("Top bewertet · $vodNoun", vodTop, SORT_RATING)) }
     ) + (if (General.showNew) listOf(

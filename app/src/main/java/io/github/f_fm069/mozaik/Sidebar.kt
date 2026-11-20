@@ -191,6 +191,8 @@ fun Sidebar(tab: Int, onTab: (Int) -> Unit, modifier: Modifier, activeFocus: Foc
     val expanded = focusIn || SidebarPrefs.labels
     val fm = LocalFocusManager.current
     val scope = rememberCoroutineScope()
+    // Favoriten, Meine Liste und EPG sind Reiter von „Verlauf“: in der Leiste ist dann „Verlauf“ markiert
+    @Suppress("NAME_SHADOWING") val tab = MenuLogic.sidebarId(tab)
     val visible = AppSettings.menuOrder.filter { it !in AppSettings.menuHidden }
     // „Einstellungen“ steht getrennt unten (bzw. rechts); die übrigen Punkte stehen in der Mitte
     val middle = visible.filter { it != MenuLogic.SETTINGS }

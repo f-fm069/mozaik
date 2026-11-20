@@ -167,6 +167,9 @@ object SidebarPrefs {
     fun align(): Alignment = when (pos) { RIGHT -> Alignment.CenterEnd; TOP -> Alignment.TopCenter; else -> Alignment.CenterStart }
 }
 
+/** Größe des Logos oben in der Leiste (Entwurfseinheiten); Release 1.2: 10 % größer als vorher (48). */
+private const val LOGO_SIZE = 53
+
 /** Höhe der Leiste oben. */
 val TopBarH: androidx.compose.ui.unit.Dp get() = dpx(68)
 
@@ -189,6 +192,9 @@ fun Sidebar(tab: Int, onTab: (Int) -> Unit, modifier: Modifier, activeFocus: Foc
     val fm = LocalFocusManager.current
     val scope = rememberCoroutineScope()
     val visible = AppSettings.menuOrder.filter { it !in AppSettings.menuHidden }
+    // „Einstellungen“ steht getrennt unten (bzw. rechts); die übrigen Punkte stehen in der Mitte
+    val middle = visible.filter { it != MenuLogic.SETTINGS }
+    val hasSettings = MenuLogic.SETTINGS in visible
     val activeVisible = tab in visible
     // Zurück in den Inhalt: die Richtung weg von der Leiste
     val outKey = when (pos) { SidebarPrefs.RIGHT -> Key.DirectionLeft; SidebarPrefs.TOP -> Key.DirectionDown; else -> Key.DirectionRight }
@@ -229,16 +235,26 @@ fun Sidebar(tab: Int, onTab: (Int) -> Unit, modifier: Modifier, activeFocus: Foc
             modifier.fillMaxWidth().height(TopBarH).background(SidebarBg)
                 .drawBehind { drawLine(Color(0x1AFFFFFF), Offset(0f, size.height - 1f), Offset(size.width, size.height - 1f), 1f) }
                 .then(group)
-                // Viele Menüpunkte: Leiste lässt sich seitlich verschieben (der markierte Punkt rückt ins Bild)
-                .horizontalScroll(androidx.compose.foundation.rememberScrollState())
                 .padding(horizontal = dpx(28)),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(dpx(8))
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(Modifier.size(dpx(40)), contentAlignment = Alignment.Center) { BrandMark(Modifier.fillMaxSize()) }
-            Spacer(Modifier.width(dpx(18)))
-            visible.forEach { id ->
-                SideItem(id, MENU_LABELS[id], id == tab, true, if (id == tab) Modifier.focusRequester(activeFocus) else Modifier, horizontal = true) { onPick(id) }
+            Row(
+                // Viele Menüpunkte: Leiste lässt sich seitlich verschieben (der markierte Punkt rückt ins Bild)
+                Modifier.weight(1f).horizontalScroll(androidx.compose.foundation.rememberScrollState()),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(dpx(8))
+            ) {
+                Box(Modifier.size(dpx(LOGO_SIZE * 40 / 48)), contentAlignment = Alignment.Center) { BrandMark(Modifier.fillMaxSize()) }
+                Spacer(Modifier.width(dpx(18)))
+                middle.forEach { id ->
+                    SideItem(id, MENU_LABELS[id], id == tab, true, if (id == tab) Modifier.focusRequester(activeFocus) else Modifier, horizontal = true) { onPick(id) }
+                }
+            }
+            // Einstellungen getrennt am rechten Rand
+            if (hasSettings) {
+                Spacer(Modifier.width(dpx(8)))
+                SideItem(MenuLogic.SETTINGS, MENU_LABELS[MenuLogic.SETTINGS], MenuLogic.SETTINGS == tab, true,
+                    if (MenuLogic.SETTINGS == tab) Modifier.focusRequester(activeFocus) else Modifier, horizontal = true) { onPick(MenuLogic.SETTINGS) }
             }
         }
         return
@@ -263,13 +279,20 @@ fun Sidebar(tab: Int, onTab: (Int) -> Unit, modifier: Modifier, activeFocus: Foc
                     drawLine(Color(0x1AFFFFFF), Offset(x, 0f), Offset(x, size.height), 1f)
                 }
                 .then(group)
-                .padding(start = dpx(16), end = dpx(16), top = dpx(22))
+                .padding(start = dpx(16), end = dpx(16), top = dpx(22), bottom = dpx(22))
         ) {
-            Box(Modifier.padding(start = dpx(6)).size(dpx(48)), contentAlignment = Alignment.Center) { BrandMark(Modifier.fillMaxSize()) }
-            Spacer(Modifier.height(dpx(34)))
-            Column(verticalArrangement = Arrangement.spacedBy(dpx(10))) {
-                visible.forEach { id ->
-                    SideItem(id, MENU_LABELS[id], id == tab, expanded, if (id == tab) Modifier.focusRequester(activeFocus) else Modifier) { onPick(id) }
+            // Logo oben (10 % größer als vorher: 53 statt 48), Menüpunkte in der Mitte der Leiste,
+            // Einstellungen getrennt ganz unten (ohne Trennlinie)
+            Box(Modifier.fillMaxSize()) {
+                Box(Modifier.align(Alignment.TopStart).padding(start = dpx(6)).size(dpx(LOGO_SIZE)), contentAlignment = Alignment.Center) { BrandMark(Modifier.fillMaxSize()) }
+                Column(Modifier.align(Alignment.Center), verticalArrangement = Arrangement.spacedBy(dpx(10))) {
+                    middle.forEach { id ->
+                        SideItem(id, MENU_LABELS[id], id == tab, expanded, if (id == tab) Modifier.focusRequester(activeFocus) else Modifier) { onPick(id) }
+                    }
+                }
+                if (hasSettings) Box(Modifier.align(Alignment.BottomStart)) {
+                    SideItem(MenuLogic.SETTINGS, MENU_LABELS[MenuLogic.SETTINGS], MenuLogic.SETTINGS == tab, expanded,
+                        if (MenuLogic.SETTINGS == tab) Modifier.focusRequester(activeFocus) else Modifier) { onPick(MenuLogic.SETTINGS) }
                 }
             }
         }

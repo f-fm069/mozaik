@@ -37,7 +37,7 @@ Mozaik does not provide any content. Add your own playlist in the app. See [DISC
 
 Verify the file (optional but recommended): the SHA-256 checksum is in `Mozaik.apk.sha256`.
 
-SHA-256 of `Mozaik.apk`: `<fill in after building the release APK>`
+SHA-256 of `Mozaik.apk`: `c0b214e1486ffaec7fe82b4c09f16b9834f286ba35d46af118f56831b3a19c97`
 
 Signing certificate: SHA-256 `4efe05232eaecae57fe8c57307b5572ec4cb0bd7bf63a17fd7e1ea8160714128` (same as 1.0.0)
 

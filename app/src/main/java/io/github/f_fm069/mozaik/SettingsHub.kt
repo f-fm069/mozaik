@@ -576,8 +576,11 @@ private fun MenuPage(ctx: Context) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(MENU_LABELS[id], color = if (id in AppSettings.menuHidden) Muted else Color.White,
                 fontSize = 17.sp, modifier = Modifier.width(190.dp))
-            SmallPill("", icon = AIcon.Up) { AppSettings.moveMenu(ctx, id, -1) }
-            SmallPill("", icon = AIcon.Down) { AppSettings.moveMenu(ctx, id, 1) }
+            // „Einstellungen“ steht immer ganz unten in der Leiste: keine Pfeile
+            if (id != MenuLogic.SETTINGS) {
+                SmallPill("", icon = AIcon.Up) { AppSettings.moveMenu(ctx, id, -1) }
+                SmallPill("", icon = AIcon.Down) { AppSettings.moveMenu(ctx, id, 1) }
+            }
             if (id != 0 && id != 5) { val hidden = id in AppSettings.menuHidden; SmallPill(if (hidden) "versteckt" else "sichtbar", icon = if (hidden) AIcon.EyeOff else AIcon.Eye) { AppSettings.toggleMenu(ctx, id) } }
         }
     }
